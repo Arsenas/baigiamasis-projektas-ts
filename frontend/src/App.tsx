@@ -14,4 +14,4 @@ const App: React.FC = () => {
 
 export default App;
 
-console.log("💣 TESTAS – ar Git mato šitąaa?");
+console.log("💣 TESTAS – ar Git mato šitą?");
