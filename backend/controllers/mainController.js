@@ -15,7 +15,10 @@ const register = async (req, res) => {
     const newUser = new User({ username, password: hashedPassword, image });
     await newUser.save();
 
-    res.json({ error: false, message: "Registration successful", user: newUser });
+    const userSafe = newUser.toObject();
+    delete userSafe.password;
+
+    res.json({ error: false, message: "Registration successful", user: userSafe });
   } catch (err) {
     res.json({ error: true, message: "Server error" });
   }
@@ -35,9 +38,12 @@ const login = async (req, res) => {
       return res.json({ error: true, message: "Incorrect password" });
     }
 
-    const token = jwt.sign({ id: user._id }, "secret");
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
 
-    res.json({ success: true, message: "Login successful", updatedUser: user, token });
+    const userSafe = user.toObject();
+    delete userSafe.password;
+
+    res.json({ success: true, message: "Login successful", updatedUser: userSafe, token });
   } catch (err) {
     res.json({ error: true, message: "Server error" });
   }

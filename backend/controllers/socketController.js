@@ -7,7 +7,7 @@ module.exports = (io) => {
     // User joins
     socket.on("userConnected", (user) => {
       if (!onlineUsers.some((u) => u._id === user._id)) {
-        onlineUsers.push(user);
+        onlineUsers.push({ ...user, socketId: socket.id }); // 👈 pridėta
       }
       io.emit("updateOnline", onlineUsers);
     });

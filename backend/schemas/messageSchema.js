@@ -21,7 +21,7 @@ const messageSchema = new Schema({
   read: {
     type: Boolean,
     required: true,
-    defaultValue: false,
+    default: false,
   },
   liked: {
     type: [String],
@@ -35,6 +35,6 @@ const messageSchema = new Schema({
   },
 });
 
-const message = mongoose.model("messages", messageSchema);
+const message = mongoose.model("Messages", messageSchema);
 
 module.exports = message;
