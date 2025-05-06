@@ -41,7 +41,7 @@ const Conversations: React.FC = () => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
 
-    newSocket.on("message", (message: Message) => {
+    newSocket.on("chatMessage", (message: Message) => {
       setMessages((prev) => [...prev, message]);
     });
 

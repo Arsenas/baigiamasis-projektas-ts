@@ -5,7 +5,7 @@ const cors = require("cors");
 const http = require("http");
 const socketIO = require("socket.io");
 
-// ❗ Pakeista čia
+// ❗ Import router
 const mainRoute = require("./routes/mainRouter");
 
 const app = express();
@@ -16,11 +16,14 @@ const io = socketIO(server, {
   },
 });
 
+// ✅ Attach io to app so it's accessible in controllers
+app.set("io", io);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// ❗ Naudojame vienintelį route failą
+// API routes
 app.use("/api", mainRoute);
 
 // MongoDB Atlas Connection
@@ -31,7 +34,7 @@ mongoose
 
 // Socket.io events
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log("🟢 User connected:", socket.id);
 
   socket.on("profileUpdated", (data) => {
     socket.broadcast.emit("profileUpdated", data);
@@ -42,7 +45,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log("🔴 User disconnected:", socket.id);
   });
 });
 
