@@ -144,6 +144,7 @@ const sendMessage = async (req, res) => {
     // ✅ Emit new message to all clients
     const io = req.app.get("io");
     io.emit("chatMessage", newMessage);
+    console.log("📨 Emitted message:", newMessage);
 
     return res.json({ error: false, message: "Message sent", data: newMessage });
   } catch (err) {
@@ -183,7 +184,31 @@ const likeMessage = (req, res) => res.json({ message: "likeMessage not implement
 const deleteAcc = (req, res) => res.json({ message: "deleteAcc not implemented" });
 const getConversationDetails = (req, res) => res.json({ message: "getConversationDetails not implemented" });
 const deleteConversation = (req, res) => res.json({ message: "deleteConversation not implemented" });
-const getConversationById = (req, res) => res.json({ message: "getConversationById not implemented" });
+const getConversationById = async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.conversationId)
+      .populate("participants", "username image")
+      .populate({
+        path: "messages",
+        options: { sort: { timestamp: 1 } },
+      });
+
+    if (!conversation) {
+      return res.status(404).json({ error: true, message: "Conversation not found" });
+    }
+
+    res.json({
+      error: false,
+      data: {
+        participants: conversation.participants,
+        messages: conversation.messages,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Failed to fetch conversation by ID:", err);
+    res.status(500).json({ error: true, message: "Failed to fetch conversation" });
+  }
+};
 const getPublicRoomMessages = (req, res) => res.json({ message: "getPublicRoomMessages not implemented" });
 const addUser = (req, res) => res.json({ message: "addUser not implemented" });
 const likeMessagePrivate = (req, res) => res.json({ message: "likeMessagePrivate not implemented" });

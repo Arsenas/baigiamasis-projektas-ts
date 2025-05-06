@@ -5,14 +5,7 @@ import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import SingleConversationComp from "../components/SingleConversationComp";
 import { useNavigate } from "react-router-dom";
-import type { User } from "../types";
-
-// Tikslus tipas pagal faktinius laukus projekte
-interface Conversation {
-  _id: string;
-  updatedAt: string;
-  participants: User[];
-}
+import type { User, Conversation } from "../types";
 
 const AllConversations: React.FC = () => {
   const { currentUser, setConNum } = mainStore();

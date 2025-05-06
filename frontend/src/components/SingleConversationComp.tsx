@@ -4,19 +4,7 @@ import http from "../plugins/http";
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
-
-// Tipai
-interface Participant {
-  username: string;
-  [key: string]: any;
-}
-
-interface Conversation {
-  _id: string;
-  participants: Participant[];
-  updatedAt: string;
-  [key: string]: any;
-}
+import type { Conversation } from "../types";
 
 interface Props {
   conversation: Conversation;
@@ -27,10 +15,12 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
   const nav = useNavigate();
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
 
+  // 🧠 Filter out yourself to get the other chat partner(s)
+  const otherParticipants = conversation.participants.filter((p) => p._id !== currentUser?._id);
+
   useEffect(() => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
-
     return () => {
       newSocket.close();
     };
@@ -83,16 +73,13 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21a48.108 48.108 0 0 0-3.478-.397m-12 .562a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916"
         />
       </svg>
 
       <div className="flex gap-3">
         <img
-          src={
-            conversation.participants.find((participant) => participant.username !== currentUser?.username)?.image ??
-            "/default.png"
-          }
+          src={otherParticipants[0]?.image ?? "/default.png"}
           alt="User"
           className="h-[120px] w-[120px] rounded-full object-cover"
         />
@@ -104,17 +91,13 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
           className="text-gray-600 hover:text-gray-500 cursor-pointer text-xl"
         >
           <p className="font-semibold">Conversation with:</p>
-          <div className="flex gap-1 text-sm">
-            <div className="flex gap-1 text-lg">
-              {conversation.participants
-                .filter((participant) => participant.username !== currentUser?.username)
-                .map((participant, i, arr) => (
-                  <p className="font-semibold" key={i}>
-                    {participant.username}
-                    {i < arr.length - 1 && ","}
-                  </p>
-                ))}
-            </div>
+          <div className="flex gap-1 text-lg">
+            {otherParticipants.map((participant, i, arr) => (
+              <p className="font-semibold" key={i}>
+                {participant.username}
+                {i < arr.length - 1 && ","}
+              </p>
+            ))}
           </div>
         </div>
         <div className="text-gray-400 text-xs">Last updated: {formatDate(conversation.updatedAt)}</div>

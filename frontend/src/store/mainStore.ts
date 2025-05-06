@@ -1,13 +1,12 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-// Tipas vartotojui
 interface User {
   _id: string;
   username: string;
   image: string;
 }
 
-// Būsena su visais laukais + metodais
 interface StoreState {
   currentUser: User | null;
   token: string;
@@ -21,17 +20,24 @@ interface StoreState {
   setConNum: (val: number) => void;
 }
 
-const useStore = create<StoreState>((set, get) => ({
-  currentUser: null,
-  token: "",
-  users: [],
-  conNum: 0,
-  grid: false, // ← ČIA pridėtas trūkstamas kintamasis
-  setGrid: (val) => set({ grid: val }),
-  setToken: (val) => set({ token: val }),
-  setCurrentUser: (val) => set({ currentUser: val }),
-  setUsers: (val) => set({ users: val }),
-  setConNum: (val) => set({ conNum: val }),
-}));
+const useStore = create<StoreState>()(
+  persist(
+    (set, get) => ({
+      currentUser: null,
+      token: "",
+      users: [],
+      conNum: 0,
+      grid: false,
+      setGrid: (val) => set({ grid: val }),
+      setToken: (val) => set({ token: val }),
+      setCurrentUser: (val) => set({ currentUser: val }),
+      setUsers: (val) => set({ users: val }),
+      setConNum: (val) => set({ conNum: val }),
+    }),
+    {
+      name: "main-store", // LocalStorage key
+    }
+  )
+);
 
 export default useStore;
