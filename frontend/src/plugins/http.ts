@@ -5,6 +5,7 @@ export interface PostAuthResponse {
   success?: boolean;
   message?: string;
   user?: any;
+  updatedUser?: any;
   token?: string;
   data?: any;
 }
