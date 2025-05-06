@@ -1,15 +1,6 @@
 import React from "react";
 import mainStore from "../store/mainStore";
-
-// Tipas vienai žinutei
-interface Message {
-  _id: string;
-  sender: string;
-  senderImage: string;
-  message: string;
-  liked?: string[];
-  timestamp: string;
-}
+import type { Message } from "../types";
 
 // Tipas propsams
 interface Props {
@@ -34,7 +25,9 @@ const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage, participan
               <div className="flex items-center py-2 px-5 bg-blue-50 rounded-3xl relative">
                 {message.message}
                 <svg
-                  onClick={() => handleLikeMessage(message._id)}
+                  onClick={() => {
+                    if (message._id) handleLikeMessage(message._id);
+                  }}
                   xmlns="http://www.w3.org/2000/svg"
                   fill={likedCount > 0 ? "pink" : "none"}
                   viewBox="0 0 24 24"
@@ -65,7 +58,9 @@ const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage, participan
               <div className="flex items-center py-2 px-5 bg-indigo-200 rounded-3xl relative">
                 {message.message}
                 <svg
-                  onClick={() => handleLikeMessage(message._id)}
+                  onClick={() => {
+                    if (message._id) handleLikeMessage(message._id);
+                  }}
                   xmlns="http://www.w3.org/2000/svg"
                   fill={likedCount > 0 ? "pink" : "none"}
                   viewBox="0 0 24 24"

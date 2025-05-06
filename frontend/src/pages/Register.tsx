@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import http from "../plugins/http";
 import { useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 
 // Komponentas skirtas vartotojo registracijai
 const Register: React.FC = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const nav = useNavigate();
 
   // Pranešimų būsena
@@ -25,7 +26,10 @@ const Register: React.FC = () => {
   useEffect(() => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
-    return () => newSocket.close();
+
+    return () => {
+      newSocket.close();
+    };
   }, []);
 
   // Registracijos funkcija
@@ -39,7 +43,7 @@ const Register: React.FC = () => {
         passwordTwo: pass2Ref.current?.value || "",
       };
 
-      const res = await http.post("/register", user);
+      const res = await http.postAuth("/register", user);
       console.log(user);
 
       if (res && res.error) {

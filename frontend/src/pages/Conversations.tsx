@@ -1,34 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import http from "../plugins/http";
 import mainStore from "../store/mainStore";
 import SingleMessage from "../components/SingleMessage";
 import { useNavigate, useParams } from "react-router-dom";
 import SuccessComp from "../components/SuccessComp";
 import ErrorComp from "../components/ErrorComp";
-
-interface Message {
-  _id?: string;
-  message: string;
-  sender: string;
-  recipient: string;
-  timestamp: string;
-  senderImage: string;
-  recipientImage: string;
-}
-
-interface User {
-  _id?: string;
-  username: string;
-  image?: string;
-}
+import type { Message, User } from "../types";
 
 const Conversations: React.FC = () => {
   const messageRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { currentUser, token } = mainStore();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const [users, setUsers] = useState<User[] | null>(null);
   const [participants, setParticipants] = useState<User[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +53,9 @@ const Conversations: React.FC = () => {
       fetchNonParticipants();
     });
 
-    return () => newSocket.close();
+    return () => {
+      newSocket.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -80,7 +68,7 @@ const Conversations: React.FC = () => {
           const filtered = res.data.participants.find((u: User) => u.username !== currentUser?.username);
           setSelectedUser(filtered);
         } else {
-          setError(res.message);
+          setError(res.message ?? null);
         }
       } catch (err) {
         setError("Failed to fetch conversation");
@@ -145,7 +133,7 @@ const Conversations: React.FC = () => {
       message: messageRef.current.value,
       timestamp: formattedTimestamp,
       senderImage: currentUser.image,
-      recipientImage: selectedUser.image,
+      recipientImage: selectedUser.image ?? "",
     };
 
     const res = await http.postAuth("/send-message", data, token);
@@ -186,14 +174,14 @@ const Conversations: React.FC = () => {
       const res = await http.postAuth(`/conversation/${conversationId}/${username}`, { user: { username } }, token);
       if (!res.error) {
         setDisplayUsers(false);
-        setSuccessMsg(res.message);
+        setSuccessMsg(res.message ?? null);
         const newUser: User = { username };
         setParticipants((prev) => (prev ? [...prev, newUser] : [newUser]));
         socket?.emit("userAdded");
 
         setTimeout(() => setSuccessMsg(null), 3000);
       } else {
-        setErrorMsg(res.message);
+        setErrorMsg(res.message ?? null);
         setTimeout(() => setErrorMsg(null), 3000);
       }
     } catch (error) {
@@ -243,7 +231,7 @@ const Conversations: React.FC = () => {
                 {messages?.map((message, i) => (
                   <SingleMessage
                     handleLikeMessage={handleLikeMessage}
-                    participants={participants}
+                    participants={participants ?? []}
                     key={i}
                     message={message}
                   />

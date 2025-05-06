@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
 import http from "../plugins/http";
 import mainStore from "../store/mainStore";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import SingleConversationComp from "../components/SingleConversationComp";
 import { useNavigate } from "react-router-dom";
+import type { User } from "../types";
 
 // Tikslus tipas pagal faktinius laukus projekte
 interface Conversation {
   _id: string;
   updatedAt: string;
+  participants: User[];
 }
 
 const AllConversations: React.FC = () => {
   const { currentUser, setConNum } = mainStore();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const nav = useNavigate();

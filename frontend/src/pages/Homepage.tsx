@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import http from "../plugins/http";
 import { useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import SingleUserCard from "../components/SingleUserCard";
 
 // User tipo apibrėžimas
@@ -19,7 +20,7 @@ const Homepage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
 
   // Prisijungiam prie socket.io kai puslapis užsikrauna
   useEffect(() => {
@@ -45,7 +46,9 @@ const Homepage: React.FC = () => {
       setUsers(filtered);
     });
 
-    return () => newSocket.close(); // Socketo uždarymas kai komponentas sunaikinamas
+    return () => {
+      newSocket.close();
+    }; // Socketo uždarymas kai komponentas sunaikinamas
   }, []);
 
   // Duomenų užkrovimas iš serverio

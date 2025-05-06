@@ -31,10 +31,10 @@ const Login: React.FC = () => {
 
     const user = { username, password };
 
-    const res = await http.post("/login", user);
+    const res = await http.postAuth("/login", user);
 
     if (res.error) {
-      setErrorMessage(res.message);
+      setErrorMessage(res.message ?? null);
       console.log(res.message);
     } else {
       console.log(res.data.updatedUser);

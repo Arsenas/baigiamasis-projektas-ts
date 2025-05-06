@@ -1,29 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import http from "../plugins/http";
 import mainStore from "../store/mainStore";
 import SingleMessage from "../components/SingleMessage";
 import { useNavigate } from "react-router-dom";
-
-// Tipai
-interface Message {
-  _id?: string;
-  message: string;
-  sender: string;
-  recipient: string;
-  timestamp: string;
-  senderImage: string;
-  recipientImage: string;
-}
-
-interface User {
-  _id: string;
-  username: string;
-  image: string;
-}
+import type { Message, User } from "../types";
 
 const ChatPage: React.FC = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const [users, setUsers] = useState<User[] | null>(null);
   const [participants, setParticipants] = useState<User[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +35,14 @@ const ChatPage: React.FC = () => {
     });
 
     newSocket.on("disconnect", () => {
-      console.log(`${currentUser?.username} has left the chat`);
+      if (currentUser) {
+        console.log(`${currentUser?.username} has left the chat`);
+      }
     });
 
-    return () => newSocket.close();
+    return () => {
+      newSocket.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -63,6 +52,7 @@ const ChatPage: React.FC = () => {
   }, [messages]);
 
   const handleLikeMessage = async (messageId: string) => {
+    if (!currentUser) return;
     try {
       const res = await http.postAuth(
         "/like-message",
@@ -101,6 +91,7 @@ const ChatPage: React.FC = () => {
   }, []);
 
   const sendMessage = async () => {
+    if (!currentUser) return;
     const timestamp = Math.floor(Date.now() / 1000);
 
     if (!messageRef.current || messageRef.current.value.length < 1 || messageRef.current.value.length > 200) {
@@ -147,6 +138,7 @@ const ChatPage: React.FC = () => {
   };
 
   const handleLoadEarlier = async () => {
+    if (!currentUser || !selectedUser) return;
     if (selectedUser) {
       try {
         const res = await http.get(`/get-earlier-messages/${currentUser.username}/${selectedUser.username}`);
@@ -182,7 +174,7 @@ const ChatPage: React.FC = () => {
                   <SingleMessage
                     key={i}
                     message={message}
-                    participants={participants}
+                    participants={participants ?? []}
                     handleLikeMessage={handleLikeMessage}
                   />
                 ))}
