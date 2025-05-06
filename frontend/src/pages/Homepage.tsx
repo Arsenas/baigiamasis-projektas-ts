@@ -55,7 +55,7 @@ const Homepage: React.FC = () => {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await http.get("/get-all-users");
+        const res = await http.get("/users/get-all-users");
 
         if (!res.error) {
           let otherUsers: User[] = res.data;
@@ -95,11 +95,12 @@ const Homepage: React.FC = () => {
 
           {/* Kiekvienas vartotojas atvaizduojamas per komponentą */}
           <div className="mt-5 flex flex-wrap gap-[50px] w-full">
-            {users.map((user) => (
-              <div key={user._id} className="xl:w-[500px] w-full">
-                <SingleUserCard user={user} />
-              </div>
-            ))}
+            {Array.isArray(users) &&
+              users.map((user) => (
+                <div key={user._id} className="xl:w-[500px] w-full">
+                  <SingleUserCard user={user} />
+                </div>
+              ))}
           </div>
         </div>
       </div>

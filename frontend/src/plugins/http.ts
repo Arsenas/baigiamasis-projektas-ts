@@ -1,10 +1,11 @@
-const baseUrl = "http://localhost:2000/api";
+const baseUrl = process.env.REACT_APP_API_URL + "/api";
 
 export interface PostAuthResponse {
   error?: boolean;
   success?: boolean;
   message?: string;
   user?: any;
+  updatedUser?: any;
   token?: string;
   data?: any;
 }

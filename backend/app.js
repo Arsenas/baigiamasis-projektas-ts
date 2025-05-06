@@ -1,16 +1,21 @@
+require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const http = require("http");
+const socketIO = require("socket.io");
+
+const authRoute = require("./routes/authRoute");
+const userRoute = require("./routes/userRoute");
+const postRoute = require("./routes/postRoute");
+
 const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http, {
+const server = http.createServer(app);
+const io = socketIO(server, {
   cors: {
     origin: "*",
   },
 });
-const mongoose = require("mongoose");
-const cors = require("cors");
-const authRoute = require("./routes/authRoute");
-const userRoute = require("./routes/userRoute");
-const postRoute = require("./routes/postRoute");
 
 // Middleware
 app.use(cors());
@@ -21,10 +26,13 @@ app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/posts", postRoute);
 
-// MongoDB
-mongoose.connect("mongodb://localhost:27017/baigiamasis");
+// MongoDB Atlas Connection
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("✅ Connected to MongoDB Atlas"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Socket.io
+// Socket.io events
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -41,8 +49,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// Server start
-const PORT = 2000;
-http.listen(PORT, () => {
-  console.log("Server listening on port", PORT);
+// Start server
+const PORT = process.env.PORT || 2000;
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });

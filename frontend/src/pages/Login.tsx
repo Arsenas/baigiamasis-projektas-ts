@@ -31,15 +31,17 @@ const Login: React.FC = () => {
 
     const user = { username, password };
 
-    const res = await http.postAuth("/login", user);
+    const res = await http.postAuth("/auth/login", user);
 
     if (res.error) {
       setErrorMessage(res.message ?? null);
       console.log(res.message);
     } else {
-      console.log(res.data.updatedUser);
-      setCurrentUser(res.data.updatedUser); // Išsaugom userį į store
-      setToken(res.data.token); // Išsaugom tokeną į store
+      console.log("RESPONSE:", res);
+      setCurrentUser(res.updatedUser); // Išsaugom userį į store
+      if (res.token) {
+        setToken(res.token);
+      }
       nav("/"); // Naviguojam į homepage
     }
   }

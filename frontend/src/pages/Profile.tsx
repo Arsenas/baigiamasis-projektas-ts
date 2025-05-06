@@ -33,7 +33,7 @@ const Profile: React.FC = () => {
       imageUrl: imageRef.current.value,
       userID: currentUser._id,
     };
-    const res = await http.postAuth("/change-image", data, token);
+    const res = await http.postAuth("/users/change-image", data, token);
     if (!res.error) {
       setCurrentUser(res.user);
       setSuccessMsg(res.message ?? null);
@@ -54,7 +54,7 @@ const Profile: React.FC = () => {
       username: usernameRef.current.value,
       userID: currentUser._id,
     };
-    const res = await http.postAuth("/change-username", data, token);
+    const res = await http.postAuth("/users/change-username", data, token);
     if (!res.error) {
       setCurrentUser(res.user);
       setSuccessMsg2(res.message ?? null);
@@ -71,7 +71,7 @@ const Profile: React.FC = () => {
       password: passRef.current.value,
       username: currentUser.username,
     };
-    const res = await http.postAuth("/login", data, token);
+    const res = await http.postAuth("/auth/login", data, token);
     if (res.success) {
       if (num === 1) setChangePassState(2);
       if (num === 2) setDeleteAccState(2);
@@ -107,7 +107,7 @@ const Profile: React.FC = () => {
       username: currentUser.username,
       userID: currentUser._id,
     };
-    const res = await http.postAuth("/change-password", data, token);
+    const res = await http.postAuth("/users/change-password", data, token);
     if (!res.error) {
       setChangePassState(0);
       setSuccessMsg3(res.message ?? null);
@@ -120,7 +120,7 @@ const Profile: React.FC = () => {
   async function deleteAcc() {
     if (!currentUser) return;
     const data = { userID: currentUser._id };
-    const res = await http.postAuth("/delete-account", data, token);
+    const res = await http.postAuth("/users/delete-account", data, token);
     if (!res.error) {
       socket?.emit("deletedAcc", res.data);
       setCurrentUser(null);
