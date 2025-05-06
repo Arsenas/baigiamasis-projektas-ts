@@ -1,12 +1,14 @@
-const errorDb = require("../schemas/errorSchema");
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-module.exports = async (error) => {
-  const newError = new errorDb({
-    ...error,
-    time: Date.now(),
-  });
+const errorSchema = new Schema({
+  message: String,
+  stack: String,
+  code: String,
+  time: {
+    type: Date,
+    required: true,
+  },
+});
 
-  await newError.save();
-
-  return true;
-};
+module.exports = mongoose.model("Error", errorSchema);

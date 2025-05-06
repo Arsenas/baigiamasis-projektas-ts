@@ -5,9 +5,8 @@ const cors = require("cors");
 const http = require("http");
 const socketIO = require("socket.io");
 
-const authRoute = require("./routes/authRoute");
-const userRoute = require("./routes/userRoute");
-const postRoute = require("./routes/postRoute");
+// ❗ Pakeista čia
+const mainRoute = require("./routes/mainRouter");
 
 const app = express();
 const server = http.createServer(app);
@@ -21,10 +20,8 @@ const io = socketIO(server, {
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/api/auth", authRoute);
-app.use("/api/users", userRoute);
-app.use("/api/posts", postRoute);
+// ❗ Naudojame vienintelį route failą
+app.use("/api", mainRoute);
 
 // MongoDB Atlas Connection
 mongoose

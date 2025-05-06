@@ -6,19 +6,19 @@ const conversationSchema = new Schema(
     participants: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        ref: "User",
         required: true,
       },
     ],
     messages: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "messages",
+        ref: "Message",
       },
     ],
     lastMessage: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "messages",
+      ref: "Message",
     },
     createdAt: {
       type: Date,

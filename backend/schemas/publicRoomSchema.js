@@ -12,12 +12,12 @@ const publicRoomSchema = new Schema(
     messages: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "messages", // Reference to the Message model
+        ref: "Message", // 👈 Modelio pavadinimas, ne kolekcijos
       },
     ],
     lastMessage: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "messages", // Reference to the latest message
+      ref: "Message", // 👈 Taip pat čia
     },
     createdAt: {
       type: Date,
@@ -25,7 +25,7 @@ const publicRoomSchema = new Schema(
     },
   },
   { timestamps: true }
-); // Automatically manage createdAt and updatedAt fields
+);
 
 const PublicRoom = mongoose.model("PublicRoom", publicRoomSchema);
 
