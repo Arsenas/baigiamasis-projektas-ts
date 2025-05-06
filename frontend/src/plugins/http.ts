@@ -18,7 +18,7 @@ async function postAuth(endpoint: string, data: any, token?: string): Promise<Po
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token && { Authorization: token }),
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: JSON.stringify(data),
     });
@@ -30,14 +30,12 @@ async function postAuth(endpoint: string, data: any, token?: string): Promise<Po
   }
 }
 
-//Get funkcija
-
 async function get(endpoint: string, token?: string): Promise<PostAuthResponse> {
   try {
     const res = await fetch(baseUrl + endpoint, {
       method: "GET",
       headers: {
-        ...(token && { Authorization: token }),
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
     });
 
