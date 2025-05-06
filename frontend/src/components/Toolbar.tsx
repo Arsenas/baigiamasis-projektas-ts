@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
 import http from "../plugins/http";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 
 // Tipas naudotojui (gali išplėsti pagal duomenis)
 interface User {
@@ -14,7 +15,7 @@ interface User {
 const Toolbar: React.FC = () => {
   const { currentUser, setCurrentUser, conNum, setConNum } = mainStore();
   const navigate = useNavigate();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const [activeLink, setActiveLink] = useState<string>("");
 
   function logOut(): void {

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import mainStore from "../store/mainStore";
 import http from "../plugins/http";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
 // Tipai
@@ -24,13 +25,15 @@ interface Props {
 const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
   const { token, currentUser } = mainStore();
   const nav = useNavigate();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
 
   useEffect(() => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
 
-    return () => newSocket.close();
+    return () => {
+      newSocket.close();
+    };
   }, []);
 
   function formatDate(dateString: string): string {

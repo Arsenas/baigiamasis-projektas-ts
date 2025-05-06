@@ -11,7 +11,7 @@ interface User {
 }
 
 const AdminPanel: React.FC = () => {
-  const { currentUser } = mainStore();
+  const { currentUser, token } = mainStore();
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const AdminPanel: React.FC = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${currentUser?.token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -57,7 +57,7 @@ const AdminPanel: React.FC = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${currentUser?.token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ role: newRole }),
       });

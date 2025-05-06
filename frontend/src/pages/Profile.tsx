@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import mainStore from "../store/mainStore";
 import http from "../plugins/http";
-import { socket as sharedSocket } from "../socket";
-import { io, Socket } from "socket.io-client";
+import socket from "../socket";
+import type { Socket } from "socket.io-client";
 import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
 
 const Profile: React.FC = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
   const { currentUser, setCurrentUser, token } = mainStore();
   const imageRef = useRef<HTMLInputElement>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
@@ -28,14 +27,8 @@ const Profile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    const newSocket = io("http://localhost:2000");
-    setSocket(newSocket);
-    return () => newSocket.close();
-  }, []);
-
   async function changeImage() {
-    if (!imageRef.current) return;
+    if (!imageRef.current || !currentUser) return;
     const data = {
       imageUrl: imageRef.current.value,
       userID: currentUser._id,
@@ -43,20 +36,20 @@ const Profile: React.FC = () => {
     const res = await http.postAuth("/change-image", data, token);
     if (!res.error) {
       setCurrentUser(res.user);
-      setSuccessMsg(res.message);
+      setSuccessMsg(res.message ?? null);
       setTimeout(() => setSuccessMsg(null), 3000);
       socket?.emit("profileUpdated", {
         userId: currentUser._id,
         image: res.user.image,
       });
     } else {
-      setErrorMsg(res.message);
+      setErrorMsg(res.message ?? null);
       setTimeout(() => setErrorMsg(null), 3000);
     }
   }
 
   async function changeUsername() {
-    if (!usernameRef.current) return;
+    if (!usernameRef.current || !currentUser) return;
     const data = {
       username: usernameRef.current.value,
       userID: currentUser._id,
@@ -64,16 +57,16 @@ const Profile: React.FC = () => {
     const res = await http.postAuth("/change-username", data, token);
     if (!res.error) {
       setCurrentUser(res.user);
-      setSuccessMsg2(res.message);
+      setSuccessMsg2(res.message ?? null);
       setTimeout(() => setSuccessMsg2(null), 3000);
     } else {
-      setErrorMsg2(res.message);
+      setErrorMsg2(res.message ?? null);
       setTimeout(() => setErrorMsg2(null), 3000);
     }
   }
 
   async function checkCurrentPassword(num: number) {
-    if (!passRef.current) return;
+    if (!passRef.current || !currentUser) return;
     const data = {
       password: passRef.current.value,
       username: currentUser.username,
@@ -83,19 +76,20 @@ const Profile: React.FC = () => {
       if (num === 1) setChangePassState(2);
       if (num === 2) setDeleteAccState(2);
     } else {
-      if (num === 1) setErrorMsg3(res.message);
-      if (num === 2) setErrorMsg4(res.message);
+      if (num === 1) setErrorMsg3(res.message ?? null);
+      if (num === 2) setErrorMsg4(res.message ?? null);
       setTimeout(() => setErrorMsg3(null), 3000);
     }
   }
 
   async function changePassword() {
-    if (!newPassRef.current || !newPass2Ref.current) return;
+    if (!newPassRef.current || !newPass2Ref.current || !currentUser) return;
     setErrorMsg3(null);
     setSuccessMsg3(null);
     const uppercaseRegex = /[A-Z]/;
     const specialCharRegex = /[!@#$%^&*_+]/;
     setError(null);
+
     const pass1 = newPassRef.current.value;
     const pass2 = newPass2Ref.current.value;
 
@@ -116,14 +110,15 @@ const Profile: React.FC = () => {
     const res = await http.postAuth("/change-password", data, token);
     if (!res.error) {
       setChangePassState(0);
-      setSuccessMsg3(res.message);
+      setSuccessMsg3(res.message ?? null);
       setTimeout(() => setSuccessMsg3(null), 3000);
     } else {
-      setErrorMsg3(res.message);
+      setErrorMsg3(res.message ?? null);
     }
   }
 
   async function deleteAcc() {
+    if (!currentUser) return;
     const data = { userID: currentUser._id };
     const res = await http.postAuth("/delete-account", data, token);
     if (!res.error) {

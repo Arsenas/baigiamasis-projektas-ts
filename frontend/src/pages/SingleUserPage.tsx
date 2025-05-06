@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import http from "../plugins/http";
 import mainStore from "../store/mainStore";
-import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
 
@@ -25,7 +26,7 @@ const SingleUserPage: React.FC = () => {
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const nav = useNavigate();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
 
   // Sukuriam WebSocket ryšį
   useEffect(() => {
@@ -37,7 +38,9 @@ const SingleUserPage: React.FC = () => {
       setUser(data);
     });
 
-    return () => newSocket.close();
+    return () => {
+      newSocket.close();
+    };
   }, []);
 
   // Iš backend'o paimam pasirinktą userį
@@ -48,7 +51,7 @@ const SingleUserPage: React.FC = () => {
         if (!res.error) {
           setUser(res.data);
         } else {
-          setError(res.message);
+          setError(res.message ?? null);
         }
       } catch (err) {
         setError("Failed to fetch user");
@@ -99,7 +102,7 @@ const SingleUserPage: React.FC = () => {
 
     const res = await http.postAuth("/send-message", messageData, token);
     if (!res.error) {
-      setSuccessMessage(res.message);
+      setSuccessMessage(res.message ?? "Success");
       setTimeout(() => setSuccessMessage(null), 3000);
 
       socket?.emit("chatMessage", {
@@ -109,7 +112,7 @@ const SingleUserPage: React.FC = () => {
 
       messageRef.current.value = "";
     } else {
-      setError(res.message);
+      setError(res.message ?? "Unknown error");
     }
   }
 
