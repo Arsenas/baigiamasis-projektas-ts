@@ -20,7 +20,7 @@ const AdminPanel: React.FC = () => {
 
   async function fetchUsers() {
     try {
-      const res = await http.get("/users/get-all-users", token);
+      const res = await http.get("/get-all-users", token);
       if (!res.error) {
         setUsers(res.data);
       } else {

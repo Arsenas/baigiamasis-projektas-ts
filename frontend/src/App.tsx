@@ -19,6 +19,7 @@ const App: React.FC = () => {
   return (
     <div className="App h-screen bg-gradient-to-br">
       <BrowserRouter>
+        <div className="fixed top-0 left-0 w-full h-[100vh] -z-10 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x bg-[length:200%_200%] blur-[2px]" />
         <Toolbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
