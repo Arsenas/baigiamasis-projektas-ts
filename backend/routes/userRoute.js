@@ -28,6 +28,23 @@ router.post("/change-image", async (req, res) => {
   }
 });
 
+// 🔍 Gauti vartotoją pagal username (GET /api/users/get-user/:username)
+router.get("/get-user/:username", async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const user = await User.findOne({ username }, "-password");
+
+    if (!user) {
+      return res.status(404).json({ error: true, message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+});
+
 // 🔄 Pakeisti vartotojo vardą
 router.post("/change-username", async (req, res) => {
   const { username, userID } = req.body;

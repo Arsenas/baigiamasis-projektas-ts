@@ -43,7 +43,7 @@ const Register: React.FC = () => {
         passwordTwo: pass2Ref.current?.value || "",
       };
 
-      const res = await http.postAuth("/register", user);
+      const res = await http.postAuth("/auth/register", user);
       console.log(user);
 
       if (res && res.error) {

@@ -47,7 +47,7 @@ const SingleUserPage: React.FC = () => {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await http.get(`/get-user/${username}`);
+        const res = await http.get(`/users/get-user/${username}`);
         if (!res.error) {
           setUser(res.data);
         } else {
