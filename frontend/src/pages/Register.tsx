@@ -100,97 +100,80 @@ const Register: React.FC = () => {
   }
 
   return (
-    <div className="flex mt-[100px] flex-col justify-center lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Create an account
-        </h2>
-      </div>
+    <div className="relative min-h-[calc(100vh-64px)] flex justify-center items-center px-4 py-8">
+      {/* 🧾 White card container */}
+      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl mx-4 sm:mx-auto px-8 py-10">
+        <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">Create an account</h2>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <div className="space-y-6">
           {/* Username input */}
           <div>
-            <label className="text-start block text-sm font-medium leading-6 text-gray-900">Username</label>
-            <div className="mt-2">
-              <input
-                ref={nameRef}
-                id="email"
-                name="email"
-                type="text"
-                autoComplete="email"
-                required
-                className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") passRef.current?.focus();
-                }}
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700">Username</label>
+            <input
+              ref={nameRef}
+              type="text"
+              autoComplete="username"
+              required
+              className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") passRef.current?.focus();
+              }}
+            />
           </div>
 
           {/* Password input */}
           <div>
-            <label className="block text-sm font-medium leading-6 text-gray-900">Password</label>
-            <div className="mt-2">
-              <input
-                ref={passRef}
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") pass2Ref.current?.focus();
-                }}
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              ref={passRef}
+              type="password"
+              autoComplete="new-password"
+              required
+              className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") pass2Ref.current?.focus();
+              }}
+            />
           </div>
 
           {/* Repeat password */}
           <div>
-            <label className="block text-sm font-medium leading-6 text-gray-900">Repeat password</label>
-            <div className="mt-2">
-              <input
-                ref={pass2Ref}
-                id="password2"
-                name="password2"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") register();
-                }}
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700">Repeat password</label>
+            <input
+              ref={pass2Ref}
+              type="password"
+              autoComplete="new-password"
+              required
+              className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") register();
+              }}
+            />
           </div>
 
-          {/* Klaidos pranešimas */}
+          {/* Error message */}
           {errorMessage && <div className="text-sm text-red-500">{errorMessage}</div>}
 
-          {/* Mygtukas registracijai */}
-          <div>
-            <button
-              onClick={register}
-              type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500"
-            >
-              Sign up
-            </button>
-          </div>
-        </div>
-
-        {/* Linkas į login puslapį */}
-        <p className="mt-10 text-center text-sm text-gray-500">
-          Already a member?{" "}
-          <span
-            onClick={() => nav("/login")}
-            className="font-semibold cursor-pointer leading-6 text-indigo-600 hover:text-indigo-500"
+          {/* Sign up button */}
+          <button
+            onClick={register}
+            type="submit"
+            className="w-full flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
           >
-            Login
-          </span>
-        </p>
+            Sign up
+          </button>
+
+          {/* Login redirect */}
+          <p className="mt-6 text-center text-sm text-gray-500">
+            Already a member?{" "}
+            <span
+              onClick={() => nav("/login")}
+              className="font-semibold cursor-pointer text-indigo-600 hover:text-indigo-500"
+            >
+              Login
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );

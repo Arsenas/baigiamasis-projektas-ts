@@ -83,9 +83,6 @@ const Homepage: React.FC = () => {
 
   return (
     <div className={`flex flex-col gap-3 relative`}>
-      {/* Header gradient fonas */}
-      <div className="flex bg-gradient-to-r from-indigo-500 to-violet-400 h-[500px]" />
-
       {/* Turinys ant viršaus */}
       <div className="flex flex-col w-full absolute top-[70px]">
         <div className="flex flex-col lg:mx-[100px] mx-[20px] bg-white p-6 rounded-2xl">
