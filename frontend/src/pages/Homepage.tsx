@@ -55,7 +55,7 @@ const Homepage: React.FC = () => {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await http.get("/users/get-all-users");
+        const res = await http.get("/get-all-users");
 
         if (!res.error) {
           let otherUsers: User[] = res.data;

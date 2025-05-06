@@ -170,14 +170,15 @@ const ChatPage: React.FC = () => {
                 className="flex flex-col min-h-[620px] max-h-[620px] p-3 overflow-auto"
                 onScroll={handleScroll}
               >
-                {messages.map((message, i) => (
-                  <SingleMessage
-                    key={i}
-                    message={message}
-                    participants={participants ?? []}
-                    handleLikeMessage={handleLikeMessage}
-                  />
-                ))}
+                {Array.isArray(messages) &&
+                  messages.map((message, i) => (
+                    <SingleMessage
+                      key={i}
+                      message={message}
+                      participants={participants ?? []}
+                      handleLikeMessage={handleLikeMessage}
+                    />
+                  ))}
                 <div ref={messagesEndRef} />
               </div>
 

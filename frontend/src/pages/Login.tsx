@@ -31,7 +31,7 @@ const Login: React.FC = () => {
 
     const user = { username, password };
 
-    const res = await http.postAuth("/auth/login", user);
+    const res = await http.postAuth("/login", user);
 
     if (res.error) {
       setErrorMessage(res.message ?? null);
@@ -56,7 +56,7 @@ const Login: React.FC = () => {
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <div className="space-y-6">
-          {/* Username laukas */}
+          {/* Username field */}
           <div>
             <label className="text-start block text-sm font-medium leading-6 text-gray-900">Username</label>
             <div className="mt-2">
@@ -67,12 +67,15 @@ const Login: React.FC = () => {
                 type="text"
                 autoComplete="email"
                 required
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") passRef.current?.focus();
+                }}
               />
             </div>
           </div>
 
-          {/* Slaptažodžio laukas */}
+          {/* Password field */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
               Password
@@ -85,7 +88,10 @@ const Login: React.FC = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") login();
+                }}
               />
             </div>
           </div>
