@@ -19,15 +19,23 @@ const SingleUserCard: React.FC<Props> = ({ user }) => {
   const { currentUser } = mainStore();
 
   return (
-    <div key={user._id} className="bg-white flex items-center w-full rounded shadow-lg gap-3 p-3">
-      <img src={user.image} className="w-36 h-36 rounded-full" alt="" />
-      <div className="flex flex-col gap-3">
-        <p className="mt-2 text-start text-gray-600 text-xl">{user.username}</p>
+    <div
+      key={user._id}
+      className="bg-white flex items-center justify-start w-full rounded-xl shadow-lg p-4 gap-6 transition hover:shadow-xl"
+    >
+      {/* Avatar with enforced square ratio and circular crop */}
+      <div className="aspect-square w-24 rounded-full overflow-hidden border-2 border-indigo-500 shrink-0">
+        <img src={user.image} alt={`${user.username}'s avatar`} className="w-full h-full object-cover" />
+      </div>
+
+      {/* Username + Message button aligned on opposite sides */}
+      <div className="flex justify-between items-center w-full">
+        <p className="text-lg sm:text-xl font-medium text-gray-800">{user.username}</p>
         {currentUser && (
           <button
             type="button"
             onClick={() => navigate(`/profile/${user.username}`)}
-            className="text-white bg-indigo-600 hover:bg-indigo-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-lg text-sm sm:text-base"
           >
             Message
           </button>

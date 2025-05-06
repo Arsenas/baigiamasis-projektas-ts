@@ -29,21 +29,24 @@ const Profile: React.FC = () => {
 
   async function changeImage() {
     if (!imageRef.current || !currentUser) return;
+
     const data = {
-      imageUrl: imageRef.current.value,
-      userID: currentUser._id,
+      image: imageRef.current.value, // ✅ FIXED KEY
     };
+
     const res = await http.postAuth("/change-image", data, token);
-    if (!res.error) {
-      setCurrentUser(res.user);
+
+    if (!res.error && res.updatedUser) {
+      setCurrentUser(res.updatedUser); // ✅ Use the correct updated user field from backend
       setSuccessMsg(res.message ?? null);
       setTimeout(() => setSuccessMsg(null), 3000);
+
       socket?.emit("profileUpdated", {
         userId: currentUser._id,
-        image: res.user.image,
+        image: res.updatedUser.image,
       });
     } else {
-      setErrorMsg(res.message ?? null);
+      setErrorMsg(res.message ?? "Image update failed");
       setTimeout(() => setErrorMsg(null), 3000);
     }
   }

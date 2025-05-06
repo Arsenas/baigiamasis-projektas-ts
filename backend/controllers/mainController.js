@@ -70,8 +70,31 @@ const getUserConversations = async (req, res) => {
   }
 };
 
-// ❌ Not implemented yet (placeholders)
-const changeImage = (req, res) => res.json({ message: "changeImage not implemented" });
+const changeImage = async (req, res) => {
+  try {
+    const { image } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId || typeof image !== "string" || !image.trim()) {
+      return res.status(400).json({ error: true, message: "Missing or invalid image data" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, { image }, { new: true, select: "-password" });
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: true, message: "User not found" });
+    }
+
+    res.json({
+      error: false,
+      message: "Image updated",
+      updatedUser, // ✅ key name matters here for your frontend
+    });
+  } catch (err) {
+    console.error("❌ Failed to update image:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+};
 const changeUsername = (req, res) => res.json({ message: "changeUsername not implemented" });
 const changePassword = (req, res) => res.json({ message: "changePassword not implemented" });
 const getAllUsers = async (req, res) => {
