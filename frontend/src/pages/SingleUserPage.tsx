@@ -7,16 +7,15 @@ import type { Socket } from "socket.io-client";
 import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
 
-// Tipas gautam naudotojui
 interface User {
   _id: string;
   username: string;
   image: string;
-  [key: string]: any; // leidžia papildomus laukus, jei jų yra
+  [key: string]: any;
 }
 
 const SingleUserPage: React.FC = () => {
-  const { username } = useParams<{ username: string }>(); // Iš URL paimam username
+  const { username } = useParams<{ username: string }>();
   const [user, setUser] = useState<User | null>(null);
   const { currentUser, token } = mainStore();
 
@@ -28,7 +27,6 @@ const SingleUserPage: React.FC = () => {
   const nav = useNavigate();
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
 
-  // Sukuriam WebSocket ryšį
   useEffect(() => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
@@ -43,7 +41,6 @@ const SingleUserPage: React.FC = () => {
     };
   }, []);
 
-  // Iš backend'o paimam pasirinktą userį
   useEffect(() => {
     async function fetchUser() {
       try {
@@ -77,42 +74,36 @@ const SingleUserPage: React.FC = () => {
       return;
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
-
-    const convertTimestamp = (timestamp: number): string => {
-      const date = new Date(timestamp * 1000);
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      const h = String(date.getHours()).padStart(2, "0");
-      const min = String(date.getMinutes()).padStart(2, "0");
-      return `${y}/${m}/${d} ${h}:${min}`;
-    };
-
-    const formattedTimestamp = convertTimestamp(timestamp);
+    const timestamp = new Date().toISOString();
 
     const messageData = {
       sender: currentUser.username,
       recipient: user.username,
       message: msgText,
-      timestamp: formattedTimestamp,
+      timestamp,
       senderImage: currentUser.image,
       recipientImage: user.image,
     };
 
-    const res = await http.postAuth("/send-message", messageData, token);
-    if (!res.error) {
-      setSuccessMessage(res.message ?? "Success");
-      setTimeout(() => setSuccessMessage(null), 3000);
+    try {
+      const res = await http.postAuth("/send-message", messageData, token);
 
-      socket?.emit("chatMessage", {
-        ...messageData,
-        _id: res.data._id,
-      });
+      if (!res.error && res.data) {
+        setSuccessMessage("Message sent!");
+        setTimeout(() => setSuccessMessage(null), 3000);
 
-      messageRef.current.value = "";
-    } else {
-      setError(res.message ?? "Unknown error");
+        socket?.emit("chatMessage", {
+          ...messageData,
+          _id: res.data._id,
+        });
+
+        messageRef.current.value = "";
+      } else {
+        setError(res.message ?? "Unknown error");
+      }
+    } catch (err) {
+      console.error("❌ Send message error:", err);
+      setError("Something went wrong");
     }
   }
 
@@ -130,10 +121,7 @@ const SingleUserPage: React.FC = () => {
 
           {currentUser ? (
             <div className="mt-10 flex flex-col gap-3">
-              <label
-                htmlFor="message"
-                className="block mb-2 text-sm text-start font-medium text-gray-900 dark:text-white"
-              >
+              <label htmlFor="message" className="block mb-2 text-sm text-start font-medium text-gray-900">
                 Your message
               </label>
               <textarea

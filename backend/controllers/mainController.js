@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Conversation = require("../schemas/conversationSchema"); // Needed for conversations
+const Message = require("../schemas/messageSchema");
 
 // ✅ Auth
 const register = async (req, res) => {
@@ -58,7 +59,9 @@ const getUserConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
       participants: userId,
-    });
+    })
+      .populate("participants", "username image") // ✅ get usernames & images
+      .populate("messages"); // optional, only if you want to preview messages
 
     res.json({ error: false, data: conversations });
   } catch (err) {
@@ -80,14 +83,132 @@ const getAllUsers = async (req, res) => {
     res.status(500).json({ error: true, message: "Failed to fetch users" });
   }
 };
-const getUserByUsername = (req, res) => res.json({ message: "getUserByUsername not implemented" });
-const sendMessage = (req, res) => res.json({ message: "sendMessage not implemented" });
-const getMessages = (req, res) => res.json({ message: "getMessages not implemented" });
+const getUserByUsername = async (req, res) => {
+  try {
+    const username = req.params.username;
+    const user = await User.findOne({ username }, { password: 0 }); // pašalina slaptažodį
+
+    if (!user) {
+      return res.status(404).json({ error: true, message: "User not found" });
+    }
+
+    return res.json({ error: false, data: user });
+  } catch (err) {
+    console.error("❌ Failed to get user by username:", err);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+};
+
+const sendMessage = async (req, res) => {
+  const { sender, recipient, message, timestamp, senderImage, recipientImage } = req.body;
+
+  if (!sender || !recipient || !message) {
+    return res.status(400).json({ error: true, message: "Missing required fields" });
+  }
+
+  try {
+    const senderUser = await User.findOne({ username: sender });
+    const recipientUser = await User.findOne({ username: recipient });
+
+    if (!senderUser || !recipientUser) {
+      return res.status(404).json({ error: true, message: "User(s) not found" });
+    }
+
+    let conversation = await Conversation.findOne({
+      participants: { $all: [senderUser._id, recipientUser._id] },
+    });
+
+    if (!conversation) {
+      conversation = new Conversation({
+        participants: [senderUser._id, recipientUser._id],
+        messages: [],
+      });
+      await conversation.save();
+    }
+
+    const newMessage = new Message({
+      sender: senderUser._id,
+      recipient: recipientUser._id,
+      message,
+      timestamp,
+      senderImage,
+      recipientImage,
+      conversation: conversation._id,
+    });
+
+    await newMessage.save();
+
+    conversation.messages.push(newMessage._id);
+    await conversation.save();
+
+    // ✅ Emit new message to all clients
+    const io = req.app.get("io");
+    io.emit("chatMessage", newMessage);
+    console.log("📨 Emitted message:", newMessage);
+
+    return res.json({ error: false, message: "Message sent", data: newMessage });
+  } catch (err) {
+    console.error("❌ Failed to send message:", err);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+};
+const getMessages = async (req, res) => {
+  const { sender, recipient } = req.params;
+
+  try {
+    const senderUser = await User.findOne({ username: sender });
+    const recipientUser = await User.findOne({ username: recipient });
+
+    if (!senderUser || !recipientUser) {
+      return res.status(404).json({ error: true, message: "User(s) not found" });
+    }
+
+    const conversation = await Conversation.findOne({
+      participants: { $all: [senderUser._id, recipientUser._id] },
+    }).populate({
+      path: "messages",
+      options: { sort: { timestamp: 1 } }, // sort oldest to newest
+    });
+
+    if (!conversation) {
+      return res.json({ error: false, data: [] }); // no messages yet
+    }
+
+    res.json({ error: false, data: conversation.messages });
+  } catch (err) {
+    console.error("❌ Error fetching messages:", err);
+    res.status(500).json({ error: true, message: "Failed to fetch messages" });
+  }
+};
 const likeMessage = (req, res) => res.json({ message: "likeMessage not implemented" });
 const deleteAcc = (req, res) => res.json({ message: "deleteAcc not implemented" });
 const getConversationDetails = (req, res) => res.json({ message: "getConversationDetails not implemented" });
 const deleteConversation = (req, res) => res.json({ message: "deleteConversation not implemented" });
-const getConversationById = (req, res) => res.json({ message: "getConversationById not implemented" });
+const getConversationById = async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.conversationId)
+      .populate("participants", "username image")
+      .populate({
+        path: "messages",
+        options: { sort: { timestamp: 1 } },
+      });
+
+    if (!conversation) {
+      return res.status(404).json({ error: true, message: "Conversation not found" });
+    }
+
+    res.json({
+      error: false,
+      data: {
+        participants: conversation.participants,
+        messages: conversation.messages,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Failed to fetch conversation by ID:", err);
+    res.status(500).json({ error: true, message: "Failed to fetch conversation" });
+  }
+};
 const getPublicRoomMessages = (req, res) => res.json({ message: "getPublicRoomMessages not implemented" });
 const addUser = (req, res) => res.json({ message: "addUser not implemented" });
 const likeMessagePrivate = (req, res) => res.json({ message: "likeMessagePrivate not implemented" });

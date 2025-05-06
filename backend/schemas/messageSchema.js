@@ -33,8 +33,13 @@ const messageSchema = new Schema({
   recipientImage: {
     type: String,
   },
+  conversation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Conversations",
+    required: true,
+  },
 });
 
-const message = mongoose.model("Messages", messageSchema);
+const Message = mongoose.model("Message", messageSchema);
 
-module.exports = message;
+module.exports = Message;

@@ -5,7 +5,6 @@ import http from "../plugins/http";
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 
-// Tipas naudotojui (gali išplėsti pagal duomenis)
 interface User {
   _id: string;
   image: string;
@@ -31,7 +30,6 @@ const Toolbar: React.FC = () => {
         const res = await http.get(`/conversations/${currentUser._id}`);
         if (!res.error) {
           setConNum(res.data.length);
-          console.log(res);
         } else {
           console.error(res.message);
         }
@@ -43,13 +41,8 @@ const Toolbar: React.FC = () => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
 
-    newSocket.on("messageReceived", () => {
-      fetchUserConversations();
-    });
-
-    newSocket.on("conversationDeleted", () => {
-      fetchUserConversations();
-    });
+    newSocket.on("messageReceived", fetchUserConversations);
+    newSocket.on("conversationDeleted", fetchUserConversations);
 
     fetchUserConversations();
 
@@ -68,91 +61,83 @@ const Toolbar: React.FC = () => {
   }
 
   return (
-    <div className="flex gap-6 justify-center font-semibold items-center w-full bg-white p-3 shadow h-[70px]">
-      <div className="flex items-center justify-between w-full">
+    <div className="flex justify-center items-center w-full bg-white border-b border-gray-200 p-3 shadow h-[70px]">
+      <div className="flex items-center justify-between w-full max-w-7xl px-4">
+        {/* Left spacer */}
         <div className="flex"></div>
-        <div className="flex gap-6">
+
+        {/* Center navigation */}
+        <div className="flex gap-6 text-sm font-semibold">
           {!currentUser && (
-            <div>
-              <Link
-                to="/login"
-                onClick={() => handleLinkClick("login")}
-                className={`block py-2 px-3 text-gray-800 rounded md:bg-transparent md:p-0 dark:text-white md:dark:text-blue-500 ${
-                  activeLink === "login" ? "text-indigo-700" : ""
-                }`}
-                aria-current="page"
-              >
-                Login
-              </Link>
-            </div>
-          )}
-          {!currentUser && (
-            <div>
-              <Link
-                to="/register"
-                onClick={() => handleLinkClick("register")}
-                className={`block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent ${
-                  activeLink === "register" ? "text-indigo-700" : ""
-                }`}
-              >
-                Register
-              </Link>
-            </div>
-          )}
-          <div>
             <Link
-              to="/"
-              onClick={() => handleLinkClick("homepage")}
-              className={`block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent ${
-                activeLink === "homepage" ? "text-indigo-700" : ""
+              to="/login"
+              onClick={() => handleLinkClick("login")}
+              className={`py-2 px-3 text-gray-800 hover:text-indigo-600 ${
+                activeLink === "login" ? "text-indigo-700" : ""
               }`}
             >
-              Homepage
+              Login
             </Link>
-          </div>
+          )}
+          {!currentUser && (
+            <Link
+              to="/register"
+              onClick={() => handleLinkClick("register")}
+              className={`py-2 px-3 text-gray-800 hover:text-indigo-600 ${
+                activeLink === "register" ? "text-indigo-700" : ""
+              }`}
+            >
+              Register
+            </Link>
+          )}
+          <Link
+            to="/"
+            onClick={() => handleLinkClick("homepage")}
+            className={`py-2 px-3 text-gray-800 hover:text-indigo-600 ${
+              activeLink === "homepage" ? "text-indigo-700" : ""
+            }`}
+          >
+            Homepage
+          </Link>
           {currentUser && (
-            <div>
-              <Link
-                to="/allConversations"
-                onClick={() => handleLinkClick("conversations")}
-                className={`block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent ${
-                  activeLink === "conversations" ? "text-indigo-700" : ""
-                }`}
-              >
-                Conversations ({conNum})
-              </Link>
-            </div>
+            <Link
+              to="/allConversations"
+              onClick={() => handleLinkClick("conversations")}
+              className={`py-2 px-3 text-gray-800 hover:text-indigo-600 ${
+                activeLink === "conversations" ? "text-indigo-700" : ""
+              }`}
+            >
+              Conversations ({conNum})
+            </Link>
           )}
           {currentUser && (
-            <div>
-              <Link
-                to="/chatPage"
-                onClick={() => handleLinkClick("chatPage")}
-                className={`block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent ${
-                  activeLink === "chatPage" ? "text-indigo-700" : ""
-                }`}
-              >
-                Chat page
-              </Link>
-            </div>
+            <Link
+              to="/chatPage"
+              onClick={() => handleLinkClick("chatPage")}
+              className={`py-2 px-3 text-gray-800 hover:text-indigo-600 ${
+                activeLink === "chatPage" ? "text-indigo-700" : ""
+              }`}
+            >
+              Chat page
+            </Link>
           )}
         </div>
-        <div className="flex items-center gap-3 me-5">
+
+        {/* Right side: avatar + logout */}
+        <div className="flex items-center gap-3">
           {currentUser && (
-            <div className="flex gap-3 items-center">
-              <img
-                src={currentUser.image}
-                className="w-[42px] h-[42px] hover:h-[44px] hover:w-[44px] bg-indigo-500 p-[2px] rounded-full cursor-pointer"
-                alt=""
-                onClick={goToProfile}
-              />
-            </div>
+            <img
+              src={currentUser.image}
+              className="w-[42px] h-[42px] hover:h-[44px] hover:w-[44px] bg-indigo-500 p-[2px] rounded-full cursor-pointer"
+              alt="avatar"
+              onClick={goToProfile}
+            />
           )}
           {currentUser && (
             <button
               type="button"
               onClick={logOut}
-              className="text-white bg-indigo-500 hover:bg-indigo-400 focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              className="text-white bg-indigo-500 hover:bg-indigo-400 font-medium rounded-lg text-sm px-4 py-2"
             >
               Log out
             </button>
