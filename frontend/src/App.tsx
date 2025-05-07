@@ -5,6 +5,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import socket from "./socket";
 import mainStore from "./store/mainStore";
 
+// Kontekstai
+import { useTheme } from "./context/ThemeContext";
+
 // Komponentai
 import Toolbar from "./components/Toolbar";
 
@@ -20,6 +23,8 @@ import ChatPage from "./pages/ChatPage";
 import AdminPanel from "./pages/AdminPanel";
 
 const App: React.FC = () => {
+  const { theme } = useTheme();
+
   useEffect(() => {
     socket.connect();
 
@@ -34,10 +39,18 @@ const App: React.FC = () => {
     };
   }, []);
 
+  const gradientClass =
+    theme === "dark" ? "from-gray-900 via-gray-800 to-black" : "from-indigo-700 via-fuchsia-600 to-rose-600";
+
   return (
-    <div className="App h-screen bg-gradient-to-br">
+    <div className="App h-screen">
       <BrowserRouter>
-        <div className="fixed top-0 left-0 w-full h-[100vh] -z-10 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x bg-[length:200%_200%] blur-[2px]" />
+        {/* 💫 Animated background gradient */}
+        <div
+          className={`fixed top-0 left-0 w-full h-[100vh] -z-10 
+                      bg-gradient-to-r ${gradientClass}
+                      animate-pulse-gradient bg-[length:200%_200%] blur-[2px]`}
+        />
         <Toolbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
