@@ -416,7 +416,26 @@ const getPublicRoomMessages = async (req, res) => {
     res.status(500).json({ error: true, message: "Failed to fetch public messages" });
   }
 };
-const addUser = (req, res) => res.json({ message: "addUser not implemented" });
+const addUserToConversation = async (req, res) => {
+  const { conversationId, userId } = req.body;
+
+  try {
+    const updated = await Conversation.findByIdAndUpdate(
+      conversationId,
+      { $addToSet: { participants: userId } },
+      { new: true }
+    ).populate("participants", "_id username image");
+
+    if (!updated) {
+      return res.status(404).json({ error: true, message: "Conversation not found" });
+    }
+
+    res.json({ error: false, updatedConversation: updated });
+  } catch (err) {
+    console.error("❌ Error adding user to conversation:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+};
 const likeMessagePrivate = (req, res) => res.json({ message: "likeMessagePrivate not implemented" });
 const getNonParticipants = (req, res) => res.json({ message: "getNonParticipants not implemented" });
 
@@ -438,7 +457,7 @@ module.exports = {
   getConversationById,
   getPublicRoomMessages,
   sendPublicMessage,
-  addUser,
+  addUserToConversation,
   deleteMessage,
   deleteMessagePermanent,
   likeMessagePrivate,
