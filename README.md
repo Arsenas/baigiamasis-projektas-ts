@@ -81,4 +81,4 @@ baigiamasis-projektas-ts/
 
 ## 📝 Pastabos
 
-Projektas orientuotas ne tik į reikalavimų įvykdymą, bet ir į realų vartotojo patyrimą. Kodo struktūra logiška, atskirtos atsakomybės, komponentai bei API endpoint'ai. Kodo skaitymas ir testavimas turėtų būti sklandus dėka aiškių pavadinimų, aplankų struktūros ir dokumentacijos.
+Projektas kuriamas orientuojantis į aiškų funkcionalumą, paprastą naudotojo patirtį ir lengvą kodo palaikymą. Kodo struktūra segmentuota pagal atsakomybes – frontend'e komponentai ir kontekstai tvarkomi atskirai, backend'e išskirti kontroleriai, middleware ir modeliai. API endpoint'ai dokumentuoti ir nuosekliai pavadinti, todėl projektą galima greitai perprasti tiek naudotojui, tiek vertintojui ar kitam programuotojui.
