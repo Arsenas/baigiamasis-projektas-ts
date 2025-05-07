@@ -1,17 +1,31 @@
 import React, { useState } from "react";
-import mainStore from "../store/mainStore";
 import type { Message } from "../types";
+import http from "../plugins/http";
+import mainStore from "../store/mainStore";
+import io from "socket.io-client";
+import { Socket } from "socket.io-client";
 
 interface Props {
   message: Message;
   handleLikeMessage: (id: string) => void;
-  handleDeleteMessage: (id: string) => void; // ✅ add this line
-  participants?: any[];
+  handleDeleteMessage: (id: string) => void;
+  participants?: any[]; // Keep participants as it was
+  socket: ReturnType<typeof io> | null; // Accept socket as a prop
+  removeMessage: (id: string) => void; // Accept removeMessage as a prop
 }
 
-const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage, handleDeleteMessage }) => {
+const SingleMessage: React.FC<Props> = ({
+  message,
+  handleLikeMessage,
+  handleDeleteMessage,
+  participants,
+  socket,
+  removeMessage,
+}) => {
   const { currentUser } = mainStore();
+  const { token } = mainStore();
   const [showMenu, setShowMenu] = useState(false);
+
   const isCurrentUser = message.sender?._id === currentUser?._id;
   const likedCount = message.liked?.length ?? 0;
 
@@ -20,10 +34,26 @@ const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage, handleDele
   const bubbleColor = isCurrentUser ? "bg-indigo-200" : "bg-blue-50";
   const textAlign = isCurrentUser ? "text-end me-10" : "text-start ms-10";
 
+  const handleDeleteForEveryone = async () => {
+    try {
+      // Call backend API to delete the message permanently
+      await http.deleteAuth(`/permanent-delete-message/${message._id}`, token);
+
+      // Emit the event for the socket connection
+      socket?.emit("messagePermanentlyDeleted", { messageId: message._id });
+      console.log("Socket event emitted for message:", message._id);
+
+      // Update local state by removing the message instantly
+      removeMessage(message._id ?? ""); // Ensure _id is not undefined
+    } catch (err) {
+      console.error("❌ Failed to delete for everyone:", err);
+    }
+  };
+
   return (
     <div className={`mt-3 flex flex-col gap-1 ${containerAlign}`}>
       <div className={`flex w-full gap-2 items-end ${messageAlign}`}>
-        {/* Triple dot (⋮) left of the message for current user */}
+        {/* ⋮ Menu */}
         {isCurrentUser && (
           <div className="flex items-center relative h-full">
             <svg
@@ -39,13 +69,21 @@ const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage, handleDele
             </svg>
 
             {showMenu && (
-              <div className="absolute top-5 right-full mr-2 bg-white border rounded-md shadow-lg z-10 w-24">
+              <div className="absolute top-5 right-full mr-2 bg-white border rounded-md shadow-lg z-10 w-40">
                 <button
                   onClick={() => handleDeleteMessage(message._id!)}
                   className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Unsend
+                  Unsend for me
                 </button>
+                {isCurrentUser && (
+                  <button
+                    onClick={handleDeleteForEveryone}
+                    className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-100"
+                  >
+                    Unsend for everyone
+                  </button>
+                )}
               </div>
             )}
           </div>

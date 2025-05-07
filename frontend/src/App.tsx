@@ -1,5 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// 🧠 Global socket and state store
+import socket from "./socket";
+import mainStore from "./store/mainStore";
 
 // Komponentai
 import Toolbar from "./components/Toolbar";
@@ -16,6 +20,20 @@ import ChatPage from "./pages/ChatPage";
 import AdminPanel from "./pages/AdminPanel";
 
 const App: React.FC = () => {
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("messagePermanentlyDeleted", ({ messageId }: { messageId: string }) => {
+      console.log("🧨 Deleted for all:", messageId);
+      mainStore.getState().removeMessage(messageId); // This must exist in Zustand
+    });
+
+    return () => {
+      socket.disconnect();
+      socket.off("messagePermanentlyDeleted");
+    };
+  }, []);
+
   return (
     <div className="App h-screen bg-gradient-to-br">
       <BrowserRouter>
@@ -23,31 +41,14 @@ const App: React.FC = () => {
         <Toolbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
-          {/* Pagrindinis puslapis su vartotojų sąrašu */}
-
           <Route path="/login" element={<Login />} />
-          {/* Prisijungimo forma */}
-
           <Route path="/register" element={<Register />} />
-          {/* Registracija */}
-
           <Route path="/profile" element={<Profile />} />
-          {/* Vartotojo profilis (dabartinio vartotojo) */}
-
           <Route path="/profile/:username" element={<SingleUserPage />} />
-          {/* Kito vartotojo profilis su galimybe išsiųsti žinutę */}
-
           <Route path="/allConversations" element={<AllConversations />} />
-          {/* Visų pokalbių sąrašas */}
-
           <Route path="/conversation/:conversationId" element={<Conversations />} />
-          {/* Konkretaus pokalbio peržiūra */}
-
           <Route path="/chatPage" element={<ChatPage />} />
-          {/* Bendras pokalbių puslapis */}
-
           <Route path="/admin" element={<AdminPanel />} />
-          {/* Administratoriaus panelė */}
         </Routes>
       </BrowserRouter>
     </div>

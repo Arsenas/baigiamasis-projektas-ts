@@ -53,4 +53,24 @@ async function get(endpoint: string, token?: string): Promise<PostAuthResponse> 
   }
 }
 
-export default { postAuth, get };
+export async function deleteAuth(endpoint: string, token?: string) {
+  try {
+    const res = await fetch(baseUrl + endpoint, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { error: true, message: err.message || `Status ${res.status}` };
+    }
+    return await res.json();
+  } catch (e) {
+    console.error("HTTP DELETE error:", e);
+    return { error: true, message: "Network error" };
+  }
+}
+
+export default { postAuth, get, deleteAuth };

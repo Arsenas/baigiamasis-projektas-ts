@@ -9,7 +9,7 @@ export interface User {
 export interface Message {
   _id?: string;
   sender: User; // ✅ Populated user object
-  recipient: string; // Still using string unless you're populating recipient too
+  recipient?: string; // Still using string unless you're populating recipient too
   message: string;
   liked?: string[];
   timestamp: string;

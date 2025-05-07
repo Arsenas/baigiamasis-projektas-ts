@@ -193,7 +193,6 @@ const deleteMessage = async (req, res) => {
     if (!message) {
       return res.status(404).json({ error: true, message: "Message not found" });
     }
-
     // If already marked deleted for this user, do nothing
     if (!message.deletedFor.includes(userId)) {
       message.deletedFor.push(userId);
@@ -206,6 +205,37 @@ const deleteMessage = async (req, res) => {
     return res.json({ error: false, message: "Message deleted for user" });
   } catch (err) {
     console.error("❌ Failed to delete message:", err);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+};
+
+// Backend - message delete handler
+const deleteMessagePermanent = async (req, res) => {
+  const userId = req.user?.id;
+  const { messageId } = req.params;
+
+  if (!userId || !messageId) {
+    return res.status(400).json({ error: true, message: "Missing user or message ID" });
+  }
+
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: true, message: "Message not found" });
+    }
+
+    if (message.sender.toString() !== userId) {
+      return res.status(403).json({ error: true, message: "Not authorized to delete this message" });
+    }
+
+    await message.deleteOne(); // Delete the message
+
+    const io = req.app.get("io");
+    io.emit("messagePermanentlyDeleted", { messageId }); // Emit the delete event
+
+    return res.json({ error: false, message: "Message permanently deleted" });
+  } catch (err) {
+    console.error("❌ Failed to permanently delete message:", err);
     return res.status(500).json({ error: true, message: "Server error" });
   }
 };
@@ -410,6 +440,7 @@ module.exports = {
   sendPublicMessage,
   addUser,
   deleteMessage,
+  deleteMessagePermanent,
   likeMessagePrivate,
   getNonParticipants,
 };
