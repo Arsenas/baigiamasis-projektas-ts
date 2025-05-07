@@ -60,7 +60,8 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
   };
 
   return (
-    <div className="p-6 bg-white flex shadow-xl rounded relative">
+    <div className="relative p-6 bg-white flex items-center gap-4 rounded-2xl shadow-xl w-full h-full">
+      {/* Delete Icon */}
       <svg
         onClick={deleteConversation}
         xmlns="http://www.w3.org/2000/svg"
@@ -68,7 +69,7 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
         viewBox="0 0 24 24"
         strokeWidth="1.5"
         stroke="currentColor"
-        className="size-5 absolute text-gray-300 hover:text-gray-500 bottom-4 right-4 cursor-pointer"
+        className="size-5 absolute text-gray-300 hover:text-gray-500 top-4 right-4 cursor-pointer"
       >
         <path
           strokeLinecap="round"
@@ -77,30 +78,27 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
         />
       </svg>
 
-      <div className="flex gap-3">
-        <img
-          src={otherParticipants[0]?.image ?? "/default.png"}
-          alt="User"
-          className="h-[120px] w-[120px] rounded-full object-cover"
-        />
-      </div>
+      {/* Image */}
+      <img
+        src={otherParticipants[0]?.image ?? "/default.png"}
+        alt="User"
+        className="h-[80px] w-[80px] rounded-full object-cover"
+      />
 
-      <div className="flex flex-col gap-1 ms-4 justify-center text-start">
-        <div
-          onClick={() => nav(`/conversation/${conversation._id}`)}
-          className="text-gray-600 hover:text-gray-500 cursor-pointer text-xl"
-        >
-          <p className="font-semibold">Conversation with:</p>
-          <div className="flex gap-1 text-lg">
+      {/* Text */}
+      <div className="flex flex-col justify-center text-start w-full">
+        <div onClick={() => nav(`/conversation/${conversation._id}`)} className="cursor-pointer hover:text-gray-500">
+          <p className="text-gray-700 font-semibold text-[16px]">Conversation with:</p>
+          <div className="flex flex-wrap gap-1 text-[15px] text-gray-800 font-semibold">
             {otherParticipants.map((participant, i, arr) => (
-              <p className="font-semibold" key={i}>
+              <span key={i}>
                 {participant.username}
                 {i < arr.length - 1 && ","}
-              </p>
+              </span>
             ))}
           </div>
         </div>
-        <div className="text-gray-400 text-xs">Last updated: {formatDate(conversation.updatedAt)}</div>
+        <p className="text-xs text-gray-400 mt-1">Last updated: {formatDate(conversation.updatedAt)}</p>
       </div>
     </div>
   );

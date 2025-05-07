@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User, Message } from "../types"; // ✅ IMPORT shared types
+import type { User, Message } from "../types"; // ✅ shared types used globally
 
 interface StoreState {
   currentUser: User | null;
@@ -11,9 +11,7 @@ interface StoreState {
 
   messages: Message[];
 
-  // ✅ supports both: (fn) => ..., and array value
   setMessages: (val: Message[] | ((prev: Message[]) => Message[])) => void;
-
   removeMessage: (id: string) => void;
 
   setGrid: (val: boolean) => void;
@@ -54,7 +52,7 @@ const useStore = create<StoreState>()(
       setConNum: (val) => set({ conNum: val }),
     }),
     {
-      name: "main-store",
+      name: "main-store", // localStorage key
     }
   )
 );

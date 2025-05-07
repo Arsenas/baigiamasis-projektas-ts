@@ -18,3 +18,8 @@ body {
   overflow: hidden;
   height: 100%;
 }
+
+body {
+  min-width: 400px;
+  overflow-x: auto;
+}

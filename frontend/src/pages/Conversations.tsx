@@ -49,6 +49,7 @@ const Conversations: React.FC = () => {
           _id: raw.sender._id,
           username: raw.sender.username,
           image: raw.sender.image,
+          role: raw.sender.role ?? "user",
         },
         recipient: raw.recipient,
         timestamp: raw.timestamp,
@@ -75,6 +76,7 @@ const Conversations: React.FC = () => {
           _id: incoming.sender._id,
           username: incoming.sender.username,
           image: incoming.sender.image,
+          role: incoming.sender.role ?? "user",
         },
       };
 
@@ -295,6 +297,7 @@ const Conversations: React.FC = () => {
           _id: res.data.user._id, // or whatever your backend returns
           username: res.data.user.username,
           image: res.data.user.image ?? "", // fallback in case it's missing
+          role: res.data.user.role ?? "user",
         };
         setParticipants((prev) => (prev ? [...prev, newUser] : [newUser]));
         socket?.emit("userAdded");
@@ -310,39 +313,44 @@ const Conversations: React.FC = () => {
 
   // ------------------ RENDER ------------------
   return (
-    <div className="flex flex-col p-16">
-      <div className="flex gap-3">
+    <div className="flex flex-col items-center w-full mt-[70px] px-[10px] sm:px-[20px]">
+      <div className="w-full max-w-[1400px] flex flex-col gap-6 bg-white shadow-2xl rounded-2xl p-6">
         {currentUser ? (
-          <div className="w-full flex gap-3">
-            <div className="flex flex-col w-full bg-white rounded-3xl">
-              <div className="flex items-center gap-3 bg-gray-100 p-2 rounded-xl">
-                {selectedUser && <img className="w-14 h-14 rounded-full" src={selectedUser.image} alt="" />}
-                <div className="flex justify-between w-full">
-                  <p className="text-gray-500 font-semibold">
+          <div className="w-full flex flex-col xl:flex-row gap-6">
+            {/* Chat Box */}
+            <div className="flex flex-col w-full bg-gray-50 p-4 rounded-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between bg-gray-100 p-3 rounded-xl mb-4">
+                <div className="flex items-center gap-3">
+                  {selectedUser && (
+                    <img className="w-12 h-12 rounded-full object-cover" src={selectedUser.image} alt="" />
+                  )}
+                  <p className="text-gray-600 font-semibold">
                     Chat with:{" "}
                     {(participants ?? [])
                       .filter((p) => p.username !== currentUser.username)
                       .map((p) => p.username)
                       .join(", ") || "(no one yet)"}
                   </p>
-                  <svg
-                    onClick={() => setDisplayUsers(!displayUsers)}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-6 text-gray-400 me-5 hover:text-gray-500 cursor-pointer"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
                 </div>
+                <svg
+                  onClick={() => setDisplayUsers(!displayUsers)}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-6 text-gray-400 hover:text-gray-500 cursor-pointer"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
               </div>
 
+              {/* Message List */}
               <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex flex-col min-h-[620px] max-h-[620px] p-3 overflow-auto"
+                className="flex flex-col min-h-[620px] max-h-[620px] p-3 overflow-auto bg-white rounded-xl shadow-inner"
               >
                 {messages.map((msg, i) => (
                   <SingleMessage
@@ -360,17 +368,19 @@ const Conversations: React.FC = () => {
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* Load Earlier Button */}
               {showButton && (
                 <button
                   onClick={handleLoadEarlier}
-                  className="absolute hidden bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white p-2 rounded"
+                  className="mt-4 bg-indigo-500 hover:bg-indigo-400 text-white p-2 rounded text-sm self-center"
                 >
                   Load Earlier
                 </button>
               )}
 
+              {/* Input */}
               {selectedUser && (
-                <div className="flex p-3 bg-gray-100 rounded-xl">
+                <div className="flex mt-4 p-3 bg-gray-100 rounded-xl items-center gap-2">
                   <input
                     ref={messageRef}
                     type="text"
@@ -403,41 +413,35 @@ const Conversations: React.FC = () => {
               )}
             </div>
 
+            {/* User Sidebar */}
             {displayUsers && (
-              <div className="bg-white rounded-3xl w-[300px] overflow-hidden flex flex-col justify-between">
-                <div className="bg-gray-100 p-6">
-                  <p className="text-gray-700 font-semibold">Add Users to the chat</p>
-                </div>
-                <div className="flex flex-col h-full gap-3 overflow-auto">
-                  {users?.map((x, i) => (
-                    <div key={i} className="w-full text-lg text-start flex flex-col items-center">
-                      <div className="flex w-full justify-between py-2 ps-4 items-center">
-                        <div>{x.username}</div>
-                        <svg
-                          onClick={() => addUser(x.username)}
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-5 text-gray-400 me-5 hover:text-gray-500 cursor-pointer"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                      </div>
-                      <div className="bg-gray-200 w-full h-[1px]" />
-                    </div>
-                  ))}
-                </div>
+              <div className="bg-white w-[300px] rounded-2xl shadow p-4 overflow-auto flex flex-col gap-2">
+                <p className="text-gray-700 font-semibold mb-2">Add Users to the chat</p>
+                {users?.map((x, i) => (
+                  <div key={i} className="flex justify-between items-center border-b pb-2">
+                    <span>{x.username}</span>
+                    <svg
+                      onClick={() => addUser(x.username)}
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="size-5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         ) : (
-          <div className="h-[600px] bg-white rounded-2xl p-3 w-full flex flex-col justify-end items-center">
-            <p className="font-semibold text-gray-600">Please Log In to send a message</p>
+          <div className="h-[600px] bg-white rounded-2xl p-6 w-full flex flex-col justify-center items-center">
+            <p className="font-semibold text-gray-600 mb-4">Please Log In to send a message</p>
             <button
               onClick={() => nav("/login")}
-              className="text-white w-[300px] mt-5 bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm px-5 py-2.5 text-center"
+              className="text-white w-[300px] bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm px-5 py-2.5"
             >
               Login
             </button>

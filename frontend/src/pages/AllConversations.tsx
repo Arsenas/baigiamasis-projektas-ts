@@ -50,27 +50,35 @@ const AllConversations: React.FC = () => {
   }, [currentUser]);
 
   return (
-    <div className="flex justify-center pt-[100px] px-[20px] xl:px-[100px] w-full">
-      <div className="flex flex-col bg-white p-4 w-full max-w-[1400px] rounded-2xl shadow-lg">
-        <div className="flex p-5 bg-white shadow-2xl w-full mb-12 font-semibold text-xl">Your Conversations:</div>
+    <div className="flex flex-col gap-3 relative">
+      <div className="flex flex-col w-full absolute top-[70px] items-center">
+        {/* ➕ Pašalinam xl:px-[100px], naudojam paddingą tik mažesniems ekranams */}
+        <div className="flex flex-col bg-white p-6 rounded-2xl shadow-2xl w-full max-w-[1400px] px-[10px] sm:px-[20px]">
+          <div className="bg-white mt-5 p-5 shadow-2xl font-semibold text-2xl">Your Conversations:</div>
 
-        {currentUser ? (
-          <div className="flex flex-wrap gap-[50px]">
-            {conversations.map((conversation) => (
-              <div key={conversation._id} className="xl:w-[450px] w-full">
-                <SingleConversationComp conversation={conversation} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => nav(`/login`)}
-            className="text-white bg-indigo-600 hover:bg-indigo-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-          >
-            Log In to see your conversations
-          </button>
-        )}
+          {currentUser ? (
+            <div className="mt-5 flex flex-wrap justify-start gap-x-[40px] gap-y-[50px]">
+              {conversations.map((conversation) => (
+                <div
+                  key={conversation._id}
+                  className="w-full sm:w-[calc(50%-20px)] xl:w-[calc(33.33%-27px)] max-w-[450px]"
+                >
+                  <SingleConversationComp conversation={conversation} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex justify-center mt-6">
+              <button
+                type="button"
+                onClick={() => nav(`/login`)}
+                className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+              >
+                Log In to see your conversations
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,9 @@ export interface User {
   _id: string;
   username: string;
   image?: string;
+  role: "user" | "admin";
+  wallpaper?: string;
+  description?: string;
 }
 
 // Message model — includes full sender object
