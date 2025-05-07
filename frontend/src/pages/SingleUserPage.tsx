@@ -77,14 +77,17 @@ const SingleUserPage: React.FC = () => {
     const timestamp = new Date().toISOString();
 
     const messageData = {
-      sender: currentUser.username,
+      sender: {
+        _id: currentUser._id,
+        username: currentUser.username,
+        image: currentUser.image,
+      },
       recipient: user.username,
+      recipientImage: user.image,
       message: msgText,
       timestamp,
-      senderImage: currentUser.image,
-      recipientImage: user.image,
+      liked: [],
     };
-
     try {
       const res = await http.postAuth("/send-message", messageData, token);
 
@@ -130,6 +133,12 @@ const SingleUserPage: React.FC = () => {
                 ref={messageRef}
                 className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300"
                 placeholder="Write your thoughts here..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault(); // prevent newline
+                    sendMessage(); // trigger your function
+                  }
+                }}
               ></textarea>
 
               <button

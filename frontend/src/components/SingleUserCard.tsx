@@ -24,12 +24,12 @@ const SingleUserCard: React.FC<Props> = ({ user }) => {
       className="bg-white flex items-center justify-start w-full rounded-xl shadow-lg p-4 gap-6 transition hover:shadow-xl"
     >
       {/* Avatar with enforced square ratio and circular crop */}
-      <div className="aspect-square w-24 rounded-full overflow-hidden border-2 border-indigo-500 shrink-0">
+      <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-indigo-500 shrink-0">
         <img src={user.image} alt={`${user.username}'s avatar`} className="w-full h-full object-cover" />
       </div>
 
       {/* Username + Message button aligned on opposite sides */}
-      <div className="flex justify-between items-center w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-2 sm:gap-0">
         <p className="text-lg sm:text-xl font-medium text-gray-800">{user.username}</p>
         {currentUser && (
           <button

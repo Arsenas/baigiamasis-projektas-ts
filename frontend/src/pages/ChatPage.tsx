@@ -109,12 +109,15 @@ const ChatPage: React.FC = () => {
     const formattedTimestamp = convertTimestamp(timestamp);
 
     const data: Message = {
-      sender: currentUser.username,
+      sender: {
+        _id: currentUser._id,
+        username: currentUser.username,
+        image: currentUser.image ?? "",
+      },
       recipient: selectedUser ? selectedUser.username : "public-room",
       message: messageRef.current.value,
       timestamp: formattedTimestamp,
-      senderImage: currentUser.image,
-      recipientImage: selectedUser ? selectedUser.image : "public-room",
+      liked: [],
     };
 
     const res = await http.postAuth("/send-message", data, token);

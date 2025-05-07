@@ -123,14 +123,19 @@ const getUserByUsername = async (req, res) => {
 };
 
 const sendMessage = async (req, res) => {
-  const { sender, recipient, message, timestamp, senderImage, recipientImage } = req.body;
+  console.log("✅ sendMessage called");
+  console.log("BODY:", req.body);
+  console.log("USER:", req.user); // requires authMiddle
+
+  const { sender, recipient, message, timestamp } = req.body;
 
   if (!sender || !recipient || !message) {
     return res.status(400).json({ error: true, message: "Missing required fields" });
   }
 
   try {
-    const senderUser = await User.findOne({ username: sender });
+    // ✅ Use nested sender.username since sender is now an object
+    const senderUser = await User.findOne({ username: sender.username });
     const recipientUser = await User.findOne({ username: recipient });
 
     if (!senderUser || !recipientUser) {
@@ -154,17 +159,15 @@ const sendMessage = async (req, res) => {
       recipient: recipientUser._id,
       message,
       timestamp,
-      senderImage,
-      recipientImage,
       conversation: conversation._id,
     });
 
     await newMessage.save();
+    await newMessage.populate("sender", "username image");
 
     conversation.messages.push(newMessage._id);
     await conversation.save();
 
-    // ✅ Emit new message to all clients
     const io = req.app.get("io");
     io.emit("chatMessage", newMessage);
     console.log("📨 Emitted message:", newMessage);
@@ -190,7 +193,8 @@ const getMessages = async (req, res) => {
       participants: { $all: [senderUser._id, recipientUser._id] },
     }).populate({
       path: "messages",
-      options: { sort: { timestamp: 1 } }, // sort oldest to newest
+      populate: { path: "sender", select: "username image" }, // <— THIS LINE FIXES IT
+      options: { sort: { timestamp: 1 } },
     });
 
     if (!conversation) {
@@ -214,6 +218,10 @@ const getConversationById = async (req, res) => {
       .populate({
         path: "messages",
         options: { sort: { timestamp: 1 } },
+        populate: {
+          path: "sender",
+          select: "username image",
+        },
       });
 
     if (!conversation) {

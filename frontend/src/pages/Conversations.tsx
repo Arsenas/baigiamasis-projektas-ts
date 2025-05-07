@@ -34,17 +34,22 @@ const Conversations: React.FC = () => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
 
-    newSocket.on("chatMessage", (rawMessage: any) => {
+    newSocket.on("chatMessage", (raw: any) => {
+      if (!raw || !raw.sender || typeof raw.sender === "string") return;
+
       const cleaned: Message = {
-        _id: rawMessage._id,
-        message: rawMessage.message,
-        sender: rawMessage.sender,
-        recipient: rawMessage.recipient,
-        timestamp: rawMessage.timestamp,
-        senderImage: rawMessage.senderImage,
-        recipientImage: rawMessage.recipientImage,
-        liked: rawMessage.liked ?? [],
+        _id: raw._id,
+        message: raw.message,
+        sender: {
+          _id: raw.sender._id,
+          username: raw.sender.username,
+          image: raw.sender.image,
+        },
+        recipient: raw.recipient,
+        timestamp: raw.timestamp,
+        liked: raw.liked ?? [],
       };
+
       setMessages((prev) => [...prev, cleaned]);
     });
 
@@ -122,21 +127,22 @@ const Conversations: React.FC = () => {
     const content = messageRef.current.value.trim();
     if (content.length < 1 || content.length > 200) return;
 
-    const message: Message = {
-      sender: currentUser.username,
-      recipient: selectedUser.username,
+    const message = {
+      sender: {
+        _id: currentUser._id,
+        username: currentUser.username,
+        image: currentUser.image ?? "",
+      },
+      recipient: selectedUser.username, // still a string unless you're populating
       message: content,
       timestamp: new Date().toISOString(),
-      senderImage: currentUser.image,
-      recipientImage: selectedUser.image ?? "",
+      liked: [],
     };
 
     try {
       const res = await http.postAuth("/send-message", message, token);
       if (!res.error) {
-        const newMsg = { ...message, _id: res.data._id };
-        setMessages((prev) => [...prev, newMsg]);
-        socket?.emit("chatMessage", newMsg);
+        socket?.emit("chatMessage", res.data);
         messageRef.current.value = "";
       } else {
         setErrorMsg(res.message ?? "Message send failed.");
@@ -172,7 +178,23 @@ const Conversations: React.FC = () => {
     try {
       const res = await http.get(`/get-earlier-messages/${currentUser.username}/${selectedUser.username}`);
       if (!res.error) {
-        setMessages((prev) => [...res.data, ...prev]);
+        const cleanedMessages: Message[] = res.data.map((msg: any) => ({
+          _id: msg._id,
+          message: msg.message,
+          sender:
+            typeof msg.sender === "string"
+              ? { _id: msg.sender, username: "Unknown" }
+              : {
+                  _id: msg.sender._id,
+                  username: msg.sender.username,
+                  image: msg.sender.image,
+                },
+          recipient: msg.recipient,
+          timestamp: msg.timestamp,
+          liked: msg.liked ?? [],
+        }));
+
+        setMessages((prev) => [...cleanedMessages, ...prev]);
       }
     } catch (error) {
       console.error("Error loading earlier messages:", error);
@@ -186,7 +208,11 @@ const Conversations: React.FC = () => {
       if (!res.error) {
         setDisplayUsers(false);
         setSuccessMsg(res.message ?? null);
-        const newUser: User = { username };
+        const newUser: User = {
+          _id: res.data.user._id, // or whatever your backend returns
+          username: res.data.user.username,
+          image: res.data.user.image ?? "", // fallback in case it's missing
+        };
         setParticipants((prev) => (prev ? [...prev, newUser] : [newUser]));
         socket?.emit("userAdded");
         setTimeout(() => setSuccessMsg(null), 3000);
@@ -264,6 +290,12 @@ const Conversations: React.FC = () => {
                     type="text"
                     placeholder="Type your message"
                     className="bg-gray-50 w-full border border-gray-300 text-sm rounded-lg p-2.5"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
                   />
                   <button onClick={sendMessage}>
                     <svg

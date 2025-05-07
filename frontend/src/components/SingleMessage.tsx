@@ -10,7 +10,8 @@ interface Props {
 
 const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage }) => {
   const { currentUser } = mainStore();
-  const isCurrentUser = currentUser?.username === message.sender;
+
+  const isCurrentUser = currentUser?._id === message.sender._id;
   const likedCount = message.liked?.length ?? 0;
 
   const bubbleClasses = isCurrentUser ? "bg-indigo-200 justify-end text-end" : "bg-blue-50 justify-start text-start";
@@ -20,10 +21,12 @@ const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage }) => {
   return (
     <div className={`mt-3 flex flex-col gap-1 ${alignItems}`}>
       <div className={`flex gap-2 w-full ${isCurrentUser ? "justify-end" : ""}`}>
-        {!isCurrentUser && <img className="w-12 h-12 rounded-full p-0.5 bg-white" src={message.senderImage} alt="" />}
+        {!isCurrentUser && (
+          <img className="w-12 h-12 rounded-full p-0.5 bg-white" src={message.sender.image} alt="sender avatar" />
+        )}
 
         <div className="flex flex-col max-w-[70%]">
-          <div className="text-gray-400 text-sm">{message.sender}</div>
+          <div className="text-gray-400 text-sm">{message.sender.username}</div>
           <div className={`flex items-center py-2 px-5 rounded-3xl relative ${bubbleClasses}`}>
             {message.message}
 
@@ -49,7 +52,9 @@ const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage }) => {
           </div>
         </div>
 
-        {isCurrentUser && <img className="w-12 h-12 rounded-full p-0.5 bg-white" src={message.senderImage} alt="" />}
+        {isCurrentUser && (
+          <img className="w-12 h-12 rounded-full p-0.5 bg-white" src={message.sender.image} alt="your avatar" />
+        )}
       </div>
 
       <p className={`text-xs text-gray-300 ${timeAlign}`}>{message.timestamp}</p>

@@ -23,7 +23,14 @@ async function postAuth(endpoint: string, data: any, token?: string): Promise<Po
       body: JSON.stringify(data),
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    if (!res.ok) {
+      console.error("❌ Backend responded with error status:", res.status);
+      return { error: true, message: result.message || "Server responded with an error" };
+    }
+
+    return result;
   } catch (error) {
     console.error("HTTP POST error:", error);
     return { error: true, message: "Network error" };
