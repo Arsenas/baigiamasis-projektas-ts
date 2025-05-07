@@ -159,4 +159,26 @@ Router.patch("/admin/change-role/:userId", authMiddle, checkRole("admin"), async
   }
 });
 
+Router.post("/update-profile", authMiddle, async (req, res) => {
+  try {
+    const updated = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: {
+          username: req.body.username,
+          image: req.body.image,
+          wallpaperUrl: req.body.wallpaperUrl,
+          description: req.body.description,
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error("❌ Failed to update profile:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = Router;

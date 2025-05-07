@@ -49,6 +49,7 @@ const Conversations: React.FC = () => {
           _id: raw.sender._id,
           username: raw.sender.username,
           image: raw.sender.image,
+          role: raw.sender.role ?? "user",
         },
         recipient: raw.recipient,
         timestamp: raw.timestamp,
@@ -75,6 +76,7 @@ const Conversations: React.FC = () => {
           _id: incoming.sender._id,
           username: incoming.sender.username,
           image: incoming.sender.image,
+          role: incoming.sender.role ?? "user",
         },
       };
 
@@ -295,6 +297,7 @@ const Conversations: React.FC = () => {
           _id: res.data.user._id, // or whatever your backend returns
           username: res.data.user.username,
           image: res.data.user.image ?? "", // fallback in case it's missing
+          role: res.data.user.role ?? "user",
         };
         setParticipants((prev) => (prev ? [...prev, newUser] : [newUser]));
         socket?.emit("userAdded");
