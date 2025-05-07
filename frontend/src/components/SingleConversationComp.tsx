@@ -4,7 +4,7 @@ import http from "../plugins/http";
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
-import type { Conversation } from "../types";
+import type { Conversation, User } from "../types";
 
 interface Props {
   conversation: Conversation;
@@ -25,6 +25,23 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
       newSocket.close();
     };
   }, []);
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      if (!currentUser) return; // ✅ Safeguard
+
+      const res = await http.get("/get-all-users");
+      if (!res.error) {
+        const others = res.data.filter(
+          (u: User) => !conversation.participants.some((p) => p._id === u._id) && u._id !== currentUser._id
+        );
+        setAvailableUsers(others);
+      }
+    }
+
+    fetchUsers();
+  }, [conversation, currentUser]); // ✅ Also add currentUser to dependencies
 
   function formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -56,6 +73,37 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
       }
     } catch (error) {
       console.error("Error deleting conversation:", error);
+    }
+  };
+
+  const handleAddUser = async (userId: string) => {
+    try {
+      interface AddUserResponse {
+        error: boolean;
+        message?: string;
+        updatedConversation?: Conversation;
+      }
+
+      const res = await http.postAuth<AddUserResponse>(
+        "/add-user-to-conversation",
+        {
+          conversationId: conversation._id,
+          userId,
+        },
+        token
+      );
+
+      if (!res.error && res.updatedConversation) {
+        // Emit update over socket
+        socket?.emit("userAddedToConversation", res.updatedConversation);
+
+        // Refresh available users list
+        setAvailableUsers((prev) => prev.filter((u) => u._id !== userId));
+      } else {
+        console.error(res.message || "Failed to add user.");
+      }
+    } catch (err) {
+      console.error("Error adding user to conversation:", err);
     }
   };
 

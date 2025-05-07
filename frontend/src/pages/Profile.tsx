@@ -5,6 +5,7 @@ import socket from "../socket";
 import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
 import Modal from "../components/Modal";
+import { useTheme } from "../context/ThemeContext";
 
 const Profile: React.FC = () => {
   const { currentUser, setCurrentUser, token } = mainStore();
@@ -23,6 +24,7 @@ const Profile: React.FC = () => {
   const [errorMsg3, setErrorMsg3] = useState<string | null>(null);
   const [errorMsg4, setErrorMsg4] = useState<string | null>(null);
   const [successMsg3, setSuccessMsg3] = useState<string | null>(null);
+  const { theme } = useTheme();
 
   async function updateField(field: string, value: string) {
     const res = await http.postAuth("/update-user-fields", { [field]: value }, token);
@@ -132,9 +134,15 @@ const Profile: React.FC = () => {
 
           {/* RIGHT COLUMN */}
           <div className="flex-1 p-8 space-y-6">
-            <div className="text-xl font-semibold text-white bg-gradient-to-r from-violet-500 to-indigo-500 rounded-lg px-4 py-3">
+            <h2
+              className={`text-xl font-bold px-6 py-3 rounded-t-2xl ${
+                theme === "dark"
+                  ? "bg-gradient-to-r from-gray-800 to-indigo-900 text-white"
+                  : "bg-indigo-500 text-white"
+              }`}
+            >
               Edit Profile
-            </div>
+            </h2>
 
             {/* GRID OF FIELDS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -167,7 +175,11 @@ const Profile: React.FC = () => {
             <div className="flex justify-end gap-4 pt-6">
               <button
                 onClick={() => setShowPassModal(true)}
-                className="bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-semibold"
+                className={`${
+                  theme === "dark"
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                } px-6 py-2 rounded-full text-sm font-semibold transition`}
               >
                 Change Password
               </button>
@@ -218,7 +230,11 @@ const Profile: React.FC = () => {
                 setShowPassModal(false);
               });
             }}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm"
+            className={`${
+              theme === "dark"
+                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                : "bg-indigo-600 hover:bg-indigo-500 text-white"
+            } px-4 py-2 rounded-lg text-sm font-semibold transition`}
           >
             Confirm
           </button>
@@ -265,16 +281,27 @@ const Field = ({
   refObj: React.RefObject<HTMLInputElement>;
   defaultValue?: string;
   onSave: () => void;
-}) => (
-  <div>
-    <label className="text-sm font-medium text-gray-700">{label}</label>
-    <div className="flex gap-2 mt-1">
-      <input ref={refObj} type="text" defaultValue={defaultValue} className="flex-1 p-2 border rounded-lg text-sm" />
-      <button onClick={onSave} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm">
-        Save
-      </button>
+}) => {
+  const { theme } = useTheme(); // ✅ Hook to access theme
+
+  return (
+    <div>
+      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <div className="flex gap-2 mt-1">
+        <input ref={refObj} type="text" defaultValue={defaultValue} className="flex-1 p-2 border rounded-lg text-sm" />
+        <button
+          onClick={onSave}
+          className={`${
+            theme === "dark"
+              ? "bg-gray-700 hover:bg-gray-600 text-white"
+              : "bg-indigo-500 hover:bg-indigo-400 text-white"
+          } px-4 py-2 rounded-md text-sm font-semibold transition`}
+        >
+          Save
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Profile;

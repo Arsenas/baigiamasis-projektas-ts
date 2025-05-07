@@ -7,7 +7,7 @@ import mainStore from "../store/mainStore";
 import SingleMessage from "../components/SingleMessage";
 import SuccessComp from "../components/SuccessComp";
 import ErrorComp from "../components/ErrorComp";
-import type { Message, User } from "../types";
+import type { Message, User, Conversation } from "../types";
 
 const Conversations: React.FC = () => {
   const messageRef = useRef<HTMLInputElement>(null);
@@ -26,6 +26,7 @@ const Conversations: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showButton, setShowButton] = useState(false);
   const [error, setError] = useState<string | null>(null); // Corrected: setError
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
 
   const { conversationId } = useParams<{ conversationId: string }>();
   const nav = useNavigate();
@@ -103,6 +104,52 @@ const Conversations: React.FC = () => {
       newSocket.close();
     };
   }, []);
+  //--------------get all users ---------
+  useEffect(() => {
+    async function fetchUsers() {
+      const res = await http.get("/get-all-users", token);
+      if (!res.error && participants && currentUser) {
+        const filtered = res.data.filter(
+          (u: User) => !participants.some((p) => p._id === u._id) && u._id !== currentUser._id
+        );
+        setAvailableUsers(filtered);
+      }
+    }
+
+    if (participants && currentUser) {
+      fetchUsers();
+    }
+  }, [participants, currentUser]);
+  const handleAddUser = async (userId: string) => {
+    if (!conversationId) return;
+
+    try {
+      const res = await http.postAuth<{ error: boolean; updatedConversation?: Conversation; message?: string }>(
+        "/add-user-to-conversation",
+        {
+          conversationId: conversationId,
+          userId,
+        },
+        token
+      );
+
+      if (!res.error && res.updatedConversation) {
+        setAvailableUsers((prev) => prev.filter((u) => u._id !== userId));
+
+        // ✅ Convert Participant[] → User[] by assigning default role
+        setParticipants(
+          res.updatedConversation.participants.map((p) => ({
+            ...p,
+            role: "user", // fallback role (you can adjust if you have real roles)
+          }))
+        );
+      } else {
+        console.error(res.message || "Failed to add user");
+      }
+    } catch (err) {
+      console.error("Add user error:", err);
+    }
+  };
   // ------------------ FETCH CONVERSATION ------------------
   useEffect(() => {
     const fetchConversation = async () => {
@@ -314,13 +361,13 @@ const Conversations: React.FC = () => {
   // ------------------ RENDER ------------------
   return (
     <div className="flex flex-col items-center w-full mt-[70px] px-[10px] sm:px-[20px]">
-      <div className="w-full max-w-[1400px] flex flex-col gap-6 bg-white shadow-2xl rounded-2xl p-6">
+      <div className="w-full max-w-[1400px] flex flex-col gap-6 bg-white/90 backdrop-blur-md border border-white/50 shadow-2xl rounded-2xl p-6">
         {currentUser ? (
           <div className="w-full flex flex-col xl:flex-row gap-6">
             {/* Chat Box */}
-            <div className="flex flex-col w-full bg-gray-50 p-4 rounded-2xl">
+            <div className="flex flex-col w-full bg-white/60 backdrop-blur-md border border-white/30 p-4 rounded-2xl">
               {/* Header */}
-              <div className="flex items-center justify-between bg-gray-100 p-3 rounded-xl mb-4">
+              <div className="flex items-center justify-between bg-white/50 backdrop-blur-sm border border-white/20 p-3 rounded-xl mb-4">
                 <div className="flex items-center gap-3">
                   {selectedUser && (
                     <img className="w-12 h-12 rounded-full object-cover" src={selectedUser.image} alt="" />
@@ -350,9 +397,9 @@ const Conversations: React.FC = () => {
               <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex flex-col min-h-[620px] max-h-[620px] p-3 overflow-auto bg-white rounded-xl shadow-inner"
+                className="flex flex-col min-h-[520px] max-h-[550px] p-3 overflow-auto bg-white/60 backdrop-blur-md border border-white/30 rounded-xl shadow-inner"
               >
-                {messages.map((msg, i) => (
+                {messages.map((msg) => (
                   <SingleMessage
                     key={msg._id}
                     message={msg}
@@ -368,7 +415,7 @@ const Conversations: React.FC = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Load Earlier Button */}
+              {/* Load Earlier */}
               {showButton && (
                 <button
                   onClick={handleLoadEarlier}
@@ -380,7 +427,7 @@ const Conversations: React.FC = () => {
 
               {/* Input */}
               {selectedUser && (
-                <div className="flex mt-4 p-3 bg-gray-100 rounded-xl items-center gap-2">
+                <div className="flex mt-4 p-3 bg-white/50 backdrop-blur-sm border border-white/20 rounded-xl items-center gap-2">
                   <input
                     ref={messageRef}
                     type="text"
@@ -413,15 +460,15 @@ const Conversations: React.FC = () => {
               )}
             </div>
 
-            {/* User Sidebar */}
+            {/* Add Users Sidebar */}
             {displayUsers && (
-              <div className="bg-white w-[300px] rounded-2xl shadow p-4 overflow-auto flex flex-col gap-2">
+              <div className="bg-white/60 backdrop-blur-md border border-white/30 w-[300px] rounded-2xl shadow p-4 overflow-auto flex flex-col gap-2">
                 <p className="text-gray-700 font-semibold mb-2">Add Users to the chat</p>
-                {users?.map((x, i) => (
-                  <div key={i} className="flex justify-between items-center border-b pb-2">
-                    <span>{x.username}</span>
+                {availableUsers?.map((u) => (
+                  <div key={u._id} className="flex justify-between items-center border-b pb-2">
+                    <span>{u.username}</span>
                     <svg
-                      onClick={() => addUser(x.username)}
+                      onClick={() => handleAddUser(u._id)}
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -437,7 +484,7 @@ const Conversations: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="h-[600px] bg-white rounded-2xl p-6 w-full flex flex-col justify-center items-center">
+          <div className="h-[600px] bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl p-6 w-full flex flex-col justify-center items-center">
             <p className="font-semibold text-gray-600 mb-4">Please Log In to send a message</p>
             <button
               onClick={() => nav("/login")}

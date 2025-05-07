@@ -158,7 +158,7 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center w-full mt-[70px] px-[10px] sm:px-[20px]">
-      <div className="w-full max-w-[1400px] bg-white rounded-2xl shadow-2xl p-6">
+      <div className="w-full max-w-[1400px] bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl shadow-2xl p-6">
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between mb-4">
             <p className="text-xl font-semibold text-gray-700">Chat Room</p>
@@ -168,7 +168,7 @@ const ChatPage: React.FC = () => {
             <>
               <div
                 ref={containerRef}
-                className="flex flex-col min-h-[620px] max-h-[620px] p-3 overflow-auto bg-gray-50 rounded-xl"
+                className="flex flex-col min-h-[550px] max-h-[500px] p-3 overflow-auto bg-gray-50 rounded-xl"
                 onScroll={handleScroll}
               >
                 {messages.map((message, i) => (
@@ -184,7 +184,7 @@ const ChatPage: React.FC = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="flex p-3 mt-4 bg-gray-100 rounded-xl">
+              <div className="flex p-3 mt-4 bg-white/60 backdrop-blur-md border border-white/30 rounded-xl">
                 <div className="w-full flex gap-2 items-center text-gray-500">
                   <input
                     ref={messageRef}

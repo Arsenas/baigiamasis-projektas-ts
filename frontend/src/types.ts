@@ -33,3 +33,10 @@ export interface Conversation {
   updatedAt: string;
   participants: Participant[];
 }
+
+export interface PostAuthResponse {
+  error: boolean;
+  message?: string;
+  data?: any;
+  updatedConversation?: Conversation;
+}

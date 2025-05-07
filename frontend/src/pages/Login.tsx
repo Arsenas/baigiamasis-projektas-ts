@@ -3,6 +3,7 @@ import http from "../plugins/http";
 import { useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
 import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Login: React.FC = () => {
   const nav = useNavigate();
@@ -12,6 +13,8 @@ const Login: React.FC = () => {
   const nameRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { theme } = useTheme();
 
   async function login() {
     setErrorMessage(null);
@@ -37,8 +40,8 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex justify-center items-center px-4 py-8">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl mx-4 px-8 py-10">
+    <div className="min-h-[calc(100vh-64px-90px)] flex justify-center items-center px-4 py-8">
+      <div className="w-full max-w-xl bg-white/85 backdrop-blur-md border border-white/30 rounded-2xl shadow-xl mx-4 px-8 py-10">
         <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
           {lang === "lt" ? "Prisijunk prie paskyros" : "Sign in to your account"}
         </h2>
@@ -81,7 +84,11 @@ const Login: React.FC = () => {
           <button
             onClick={login}
             type="submit"
-            className="w-full flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+            className={`w-full flex justify-center rounded-md px-4 py-2 text-sm font-semibold transition ${
+              theme === "dark"
+                ? "bg-gray-800 text-white hover:bg-gray-700"
+                : "bg-indigo-600 text-white hover:bg-indigo-500"
+            }`}
           >
             {lang === "lt" ? "Prisijungti" : "Sign in"}
           </button>
@@ -90,7 +97,9 @@ const Login: React.FC = () => {
             {lang === "lt" ? "Nesi narys?" : "Not a member?"}{" "}
             <span
               onClick={() => nav("/register")}
-              className="font-semibold cursor-pointer text-indigo-600 hover:text-indigo-500"
+              className={`font-semibold cursor-pointer transition ${
+                theme === "dark" ? "text-gray-800 hover:text-gray-700" : "text-indigo-600 hover:text-indigo-500"
+              }`}
             >
               {lang === "lt" ? "Registruotis" : "Register"}
             </span>

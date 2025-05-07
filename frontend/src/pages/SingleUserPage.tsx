@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
+import { useTheme } from "../context/ThemeContext";
 
 interface User {
   _id: string;
@@ -18,7 +19,8 @@ const SingleUserPage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
   const [user, setUser] = useState<User | null>(null);
   const { currentUser, token } = mainStore();
-
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -154,10 +156,14 @@ const SingleUserPage: React.FC = () => {
 
             <button
               type="button"
-              onClick={sendMessage}
-              className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+              onClick={() => nav("/login")}
+              className={`mt-5 text-sm px-5 py-2.5 rounded-full font-medium transition ${
+                theme === "dark"
+                  ? "bg-gray-700 hover:bg-gray-600 text-white"
+                  : "bg-indigo-600 hover:bg-indigo-500 text-white"
+              }`}
             >
-              Send a message
+              Send Message
             </button>
 
             {error && <ErrorComp error={error} />}
@@ -167,7 +173,11 @@ const SingleUserPage: React.FC = () => {
           <button
             type="button"
             onClick={() => nav("/login")}
-            className="text-white mt-5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+            className={`text-sm px-5 py-2.5 rounded-full font-medium transition ${
+              theme === "dark"
+                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                : "bg-indigo-600 hover:bg-indigo-500 text-white"
+            }`}
           >
             Login to send a message
           </button>

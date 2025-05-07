@@ -60,9 +60,8 @@ const AllConversations: React.FC = () => {
   return (
     <div className="flex flex-col gap-3 relative">
       <div className="flex flex-col w-full absolute top-[70px] items-center">
-        {/* ➕ Pašalinam xl:px-[100px], naudojam paddingą tik mažesniems ekranams */}
-        <div className="flex flex-col bg-white p-6 rounded-2xl shadow-2xl w-full max-w-[1400px] px-[10px] sm:px-[20px]">
-          <div className="bg-white mt-5 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-2xl font-semibold text-2xl">
+        <div className="flex flex-col w-full max-w-[1400px] px-[10px] sm:px-[20px] bg-white/90 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-2xl">
+          <div className="bg-white/60 backdrop-blur-md border border-white/30 mt-5 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-semibold text-2xl shadow-2xl">
             <p className="text-gray-600">Your Conversations:</p>
             <input
               type="text"

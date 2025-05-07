@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
+import { useTheme } from "../context/ThemeContext";
 
 // Tipas naudotojo propsams
 interface User {
@@ -17,6 +18,8 @@ interface Props {
 const SingleUserCard: React.FC<Props> = ({ user }) => {
   const navigate = useNavigate();
   const { currentUser } = mainStore();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <div
@@ -39,7 +42,9 @@ const SingleUserCard: React.FC<Props> = ({ user }) => {
         <button
           type="button"
           onClick={() => navigate(`/profile/${user.username}`)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm w-full sm:w-auto transition"
+          className={`font-medium rounded-full text-sm px-5 py-2.5 transition ${
+            isDark ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-indigo-600 hover:bg-indigo-500 text-white"
+          }`}
         >
           Message
         </button>
