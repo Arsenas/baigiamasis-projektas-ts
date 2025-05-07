@@ -40,8 +40,15 @@ const messageSchema = new Schema({
     ref: "Conversation",
     default: null,
   },
+
+  // ✅ Soft delete: track users who have unsent/deleted this message
+  deletedFor: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
 });
 
 const Message = mongoose.model("Message", messageSchema);
-
 module.exports = Message;

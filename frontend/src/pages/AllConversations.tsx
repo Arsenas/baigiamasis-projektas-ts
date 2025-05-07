@@ -21,8 +21,13 @@ const AllConversations: React.FC = () => {
       try {
         const res = await http.get(`/conversations/${currentUser._id}`);
         if (!res.error) {
-          setConNum(res.data.length);
-          setConversations(res.data || []);
+          const filtered = (res.data || []).filter((c: any) => {
+            // handle hiddenFor being undefined or populated
+            return !c.hiddenFor?.some((id: any) => id === currentUser._id || id._id === currentUser._id);
+          });
+
+          setConNum(filtered.length);
+          setConversations(filtered);
         } else {
           console.error(res.message);
         }
@@ -45,29 +50,27 @@ const AllConversations: React.FC = () => {
   }, [currentUser]);
 
   return (
-    <div className="flex flex-col w-full h-full relative">
-      <div className="flex absolute top-[100px] xl:px-[100px] px-[20px] w-full">
-        <div className="flex-col flex bg-white p-4 w-full rounded-2xl min-h-[650px]">
-          <div className="flex p-5 bg-white shadow-2xl w-full mb-12 font-semibold text-xl">Your Conversations:</div>
+    <div className="flex justify-center pt-[100px] px-[20px] xl:px-[100px] w-full">
+      <div className="flex flex-col bg-white p-4 w-full max-w-[1400px] rounded-2xl shadow-lg">
+        <div className="flex p-5 bg-white shadow-2xl w-full mb-12 font-semibold text-xl">Your Conversations:</div>
 
-          {currentUser ? (
-            <div className="flex flex-wrap gap-[50px] ">
-              {conversations.map((conversation) => (
-                <div key={conversation._id} className="xl:w-[450px] w-full ">
-                  <SingleConversationComp conversation={conversation} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => nav(`/login`)}
-              className="text-white bg-indigo-600 hover:bg-indigo-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-            >
-              Log In to see your conversations
-            </button>
-          )}
-        </div>
+        {currentUser ? (
+          <div className="flex flex-wrap gap-[50px]">
+            {conversations.map((conversation) => (
+              <div key={conversation._id} className="xl:w-[450px] w-full">
+                <SingleConversationComp conversation={conversation} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => nav(`/login`)}
+            className="text-white bg-indigo-600 hover:bg-indigo-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+          >
+            Log In to see your conversations
+          </button>
+        )}
       </div>
     </div>
   );

@@ -53,8 +53,23 @@ const Conversations: React.FC = () => {
       setMessages((prev) => [...prev, cleaned]);
     });
 
-    newSocket.on("likeMessage", (messages: Message[]) => {
-      setMessages(messages);
+    newSocket.on("likeMessage", (incoming: any) => {
+      if (!incoming || !incoming._id) return;
+
+      const updated: Message = {
+        _id: incoming._id,
+        message: incoming.message,
+        timestamp: incoming.timestamp,
+        liked: incoming.liked ?? [],
+        recipient: incoming.recipient,
+        sender: {
+          _id: incoming.sender._id,
+          username: incoming.sender.username,
+          image: incoming.sender.image,
+        },
+      };
+
+      setMessages((prev) => prev.map((msg) => (msg._id === updated._id ? updated : msg)));
     });
 
     newSocket.on("messageReceived", fetchNonParticipants);
@@ -154,19 +169,23 @@ const Conversations: React.FC = () => {
 
   // ------------------ LIKE MESSAGE ------------------
   const handleLikeMessage = async (messageId: string) => {
-    if (!currentUser || !selectedUser) return;
+    if (!currentUser) return;
     try {
       const res = await http.postAuth(
-        "/like-message-private",
+        "/like-message",
         {
           messageId,
           username: currentUser.username,
-          recipient: selectedUser,
-          sender: currentUser,
         },
         token
       );
-      if (!res.error) socket?.emit("likeMessage", res.data);
+
+      if (!res.error) {
+        // Replace updated message in state
+        setMessages((prev) => prev.map((msg) => (msg._id === res.data._id ? res.data : msg)));
+
+        socket?.emit("likeMessage", res.data); // only needed if others should update in real-time
+      }
     } catch (error) {
       console.error("Failed to like message:", error);
     }
@@ -227,7 +246,7 @@ const Conversations: React.FC = () => {
 
   // ------------------ RENDER ------------------
   return (
-    <div className="flex flex-col bg-gradient-to-r from-indigo-500 to-violet-400 p-16">
+    <div className="flex flex-col p-16">
       <div className="flex gap-3">
         {currentUser ? (
           <div className="w-full flex gap-3">

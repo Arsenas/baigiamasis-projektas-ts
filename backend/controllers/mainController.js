@@ -59,10 +59,10 @@ const getUserConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
       participants: userId,
+      hiddenFor: { $ne: userId }, // ✅ exclude hidden ones
     })
-      .populate("participants", "username image") // ✅ get usernames & images
-      .populate("messages"); // optional, only if you want to preview messages
-
+      .populate("participants", "username image")
+      .populate("messages");
     res.json({ error: false, data: conversations });
   } catch (err) {
     console.error("❌ Error fetching conversations:", err);
@@ -179,6 +179,37 @@ const sendMessage = async (req, res) => {
   }
 };
 
+const deleteMessage = async (req, res) => {
+  const userId = req.user?.id;
+  const { messageId } = req.params;
+
+  if (!userId || !messageId) {
+    return res.status(400).json({ error: true, message: "Missing user or message ID" });
+  }
+
+  try {
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ error: true, message: "Message not found" });
+    }
+
+    // If already marked deleted for this user, do nothing
+    if (!message.deletedFor.includes(userId)) {
+      message.deletedFor.push(userId);
+      await message.save();
+    }
+
+    const io = req.app.get("io");
+    io.emit("messageDeleted", { messageId, userId }); // frontends should hide the message locally
+
+    return res.json({ error: false, message: "Message deleted for user" });
+  } catch (err) {
+    console.error("❌ Failed to delete message:", err);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+};
+
 const sendPublicMessage = async (req, res) => {
   const { sender, message, timestamp } = req.body;
 
@@ -228,24 +259,87 @@ const getMessages = async (req, res) => {
       participants: { $all: [senderUser._id, recipientUser._id] },
     }).populate({
       path: "messages",
-      populate: { path: "sender", select: "username image" }, // <— THIS LINE FIXES IT
+      populate: { path: "sender", select: "username image" },
       options: { sort: { timestamp: 1 } },
     });
 
     if (!conversation) {
-      return res.json({ error: false, data: [] }); // no messages yet
+      return res.json({ error: false, data: [] });
     }
 
-    res.json({ error: false, data: conversation.messages });
+    // ✅ Filter out messages deleted for the sender
+    const filtered = conversation.messages.filter(
+      (msg) => !msg.deletedFor?.some((id) => id.toString() === senderUser._id.toString())
+    );
+
+    res.json({ error: false, data: filtered });
   } catch (err) {
     console.error("❌ Error fetching messages:", err);
     res.status(500).json({ error: true, message: "Failed to fetch messages" });
   }
 };
-const likeMessage = (req, res) => res.json({ message: "likeMessage not implemented" });
+const likeMessage = async (req, res) => {
+  const { messageId, username } = req.body;
+
+  if (!messageId || !username) {
+    return res.status(400).json({ error: true, message: "Missing fields" });
+  }
+
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) return res.status(404).json({ error: true, message: "Message not found" });
+
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ error: true, message: "User not found" });
+
+    const alreadyLiked = message.liked.includes(user._id);
+    if (alreadyLiked) {
+      message.liked = message.liked.filter((id) => id.toString() !== user._id.toString());
+    } else {
+      message.liked.push(user._id);
+    }
+
+    await message.save();
+    await message.populate("sender", "username image");
+
+    const io = req.app.get("io");
+    io.emit("likeMessage", message); // broadcast updated message
+
+    return res.json({ error: false, data: message });
+  } catch (err) {
+    console.error("❌ Failed to like message:", err);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+};
 const deleteAcc = (req, res) => res.json({ message: "deleteAcc not implemented" });
 const getConversationDetails = (req, res) => res.json({ message: "getConversationDetails not implemented" });
-const deleteConversation = (req, res) => res.json({ message: "deleteConversation not implemented" });
+const deleteConversation = async (req, res) => {
+  const userId = req.user?.id;
+  const { conversationId } = req.params;
+
+  if (!userId) return res.status(401).json({ error: true, message: "Unauthorized" });
+
+  try {
+    const conversation = await Conversation.findById(conversationId);
+
+    if (!conversation) {
+      return res.status(404).json({ error: true, message: "Conversation not found" });
+    }
+
+    if (!conversation.hiddenFor.includes(userId)) {
+      conversation.hiddenFor.push(userId);
+      await conversation.save();
+    }
+
+    const io = req.app.get("io");
+    io.emit("conversationDeleted");
+
+    return res.json({ error: false, message: "Conversation deleted for current user" });
+  } catch (err) {
+    console.error("❌ Failed to delete conversation:", err);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+};
 const getConversationById = async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.conversationId)
@@ -277,11 +371,16 @@ const getConversationById = async (req, res) => {
 };
 const getPublicRoomMessages = async (req, res) => {
   try {
+    const userId = req.user?.id;
+
     const messages = await Message.find({ recipient: null })
       .sort({ timestamp: 1 })
       .populate("sender", "username image");
 
-    res.json({ error: false, data: messages });
+    // ✅ Exclude deleted-for-user messages
+    const filtered = messages.filter((msg) => !msg.deletedFor?.some((id) => id.toString() === userId));
+
+    res.json({ error: false, data: filtered });
   } catch (err) {
     console.error("❌ Failed to fetch public room messages:", err);
     res.status(500).json({ error: true, message: "Failed to fetch public messages" });
@@ -310,6 +409,7 @@ module.exports = {
   getPublicRoomMessages,
   sendPublicMessage,
   addUser,
+  deleteMessage,
   likeMessagePrivate,
   getNonParticipants,
 };

@@ -87,7 +87,7 @@ const Homepage: React.FC = () => {
       <div className="flex flex-col w-full absolute top-[70px]">
         <div className="flex flex-col lg:mx-[100px] mx-[20px] bg-white p-6 rounded-2xl">
           <div className="bg-white mt-5 p-5 flex shadow-2xl">
-            <p className="font-semibold text-gray-600 rounded-2xl text-2xl">Users</p>
+            <p className="font-semibold text-gray-600 rounded-2xl text-2xl">Registered Users:</p>
           </div>
 
           {/* Kiekvienas vartotojas atvaizduojamas per komponentą */}

@@ -118,7 +118,7 @@ const Toolbar: React.FC = () => {
                 activeLink === "chatPage" ? "text-indigo-700" : ""
               }`}
             >
-              Chat page
+              Public Room
             </Link>
           )}
         </div>

@@ -41,8 +41,8 @@ const ChatPage: React.FC = () => {
       setMessages((prev) => [...(prev ?? []), cleaned]);
     });
 
-    newSocket.on("likeMessage", () => {
-      fetchPublicRoomMessages();
+    newSocket.on("likeMessage", (updatedMessage: Message) => {
+      setMessages((prev) => prev.map((msg) => (msg._id === updatedMessage._id ? updatedMessage : msg)));
     });
 
     return () => {
@@ -114,14 +114,15 @@ const ChatPage: React.FC = () => {
         {
           messageId,
           username: currentUser.username,
-          recipient: "public-room",
-          sender: currentUser,
         },
         token
       );
 
       if (!res.error) {
-        socket?.emit("likeMessage", res.data);
+        // Replace updated message in state
+        setMessages((prev) => prev.map((msg) => (msg._id === res.data._id ? res.data : msg)));
+
+        socket?.emit("likeMessage", res.data); // only needed if others should update in real-time
       }
     } catch (error) {
       console.error("Failed to like message:", error);
@@ -165,6 +166,12 @@ const ChatPage: React.FC = () => {
                     type="text"
                     placeholder="Type your message"
                     className="bg-gray-50 w-full border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
                   />
                   <svg
                     onClick={sendMessage}

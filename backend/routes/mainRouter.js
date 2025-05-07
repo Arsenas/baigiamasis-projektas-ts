@@ -33,6 +33,7 @@ const {
   sendPublicMessage,
   getMessages,
   likeMessage,
+  deleteMessage,
   deleteAcc,
   getUserConversations,
   getConversationDetails,
@@ -57,6 +58,7 @@ Router.post("/send-message", authMiddle, messageValidate, sendMessage);
 Router.get("/get-messages/:sender/:recipient", getMessages);
 Router.post("/like-message", authMiddle, likeMessage);
 Router.post("/like-message-private", authMiddle, likeMessagePrivate);
+Router.post("/delete-message/:messageId", authMiddle, deleteMessage);
 
 // 👤 Users
 Router.get("/get-all-users", getAllUsers);
@@ -70,16 +72,7 @@ Router.post("/conversation/:conversationId/:username", authMiddle, addUser);
 Router.get("/get-public-room-messages", getPublicRoomMessages);
 Router.post("/send-public-message", authMiddle, sendPublicMessage);
 
-Router.post(
-  "/deleteConversation/:conversationId",
-  authMiddle,
-  checkOwnershipOrAdmin({
-    model: Conversation,
-    idParam: "conversationId",
-    authorField: "participants",
-  }),
-  deleteConversation
-);
+Router.post("/deleteConversation/:conversationId", authMiddle, deleteConversation);
 
 // 🛠️ Admin
 Router.post("/admin/delete-user/:userId", authMiddle, checkRole("admin"), async (req, res) => {
