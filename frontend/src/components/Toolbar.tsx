@@ -4,12 +4,8 @@ import mainStore from "../store/mainStore";
 import http from "../plugins/http";
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
-
-interface User {
-  _id: string;
-  image: string;
-  [key: string]: any;
-}
+import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const Toolbar: React.FC = () => {
   const { currentUser, setCurrentUser, conNum, setConNum } = mainStore();
@@ -17,10 +13,11 @@ const Toolbar: React.FC = () => {
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const [activeLink, setActiveLink] = useState<string>("");
 
-  function logOut(): void {
-    setCurrentUser(null);
-    navigate("/login");
-  }
+  const { theme, setTheme } = useTheme();
+  const { lang, setLang } = useLanguage();
+
+  const defaultAvatar =
+    "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
 
   useEffect(() => {
     async function fetchUserConversations() {
@@ -61,13 +58,33 @@ const Toolbar: React.FC = () => {
   }
 
   return (
-    <div className="flex justify-center items-center w-full bg-white border-b border-gray-200 p-3 shadow h-[70px]">
-      <div className="flex items-center justify-between w-full max-w-7xl px-4">
-        {/* Left spacer */}
-        <div className="flex"></div>
+    <div className="flex justify-center items-center w-full bg-white border-b border-gray-200 px-4 shadow h-[70px]">
+      <div className="flex items-center justify-between w-full max-w-7xl relative">
+        {/* 🔘 Kairė: kalba + tema */}
+        <div className="flex gap-4 items-center">
+          {/* Kalbos perjungimas su vėliavėle ir tekstu */}
+          <button
+            onClick={() => setLang(lang === "en" ? "lt" : "en")}
+            title={lang === "en" ? "Switch to Lithuanian" : "Pakeisti į anglų"}
+          >
+            <img src={`/flags/${lang === "en" ? "gb.svg" : "lt.svg"}`} alt={lang} className="w-6 h-6" />
+          </button>
 
-        {/* Center navigation */}
-        <div className="flex gap-6 text-sm font-semibold">
+          {/* Toggle animuotas */}
+          <label className="relative inline-flex items-center cursor-pointer w-11 h-6">
+            <input
+              type="checkbox"
+              checked={theme === "dark"}
+              onChange={() => setTheme(theme === "light" ? "dark" : "light")}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-indigo-600 transition-colors duration-300" />
+            <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 peer-checked:translate-x-full" />
+          </label>
+        </div>
+
+        {/* 🌐 Centras: per vidurį */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex gap-6 text-sm font-semibold">
           {!currentUser && (
             <Link
               to="/login"
@@ -76,7 +93,7 @@ const Toolbar: React.FC = () => {
                 activeLink === "login" ? "text-indigo-700" : ""
               }`}
             >
-              Login
+              {lang === "lt" ? "Prisijungti" : "Login"}
             </Link>
           )}
           {!currentUser && (
@@ -87,7 +104,7 @@ const Toolbar: React.FC = () => {
                 activeLink === "register" ? "text-indigo-700" : ""
               }`}
             >
-              Register
+              {lang === "lt" ? "Registracija" : "Register"}
             </Link>
           )}
           <Link
@@ -97,7 +114,7 @@ const Toolbar: React.FC = () => {
               activeLink === "homepage" ? "text-indigo-700" : ""
             }`}
           >
-            Homepage
+            {lang === "lt" ? "Pagrindinis" : "Homepage"}
           </Link>
           {currentUser && (
             <Link
@@ -107,7 +124,7 @@ const Toolbar: React.FC = () => {
                 activeLink === "conversations" ? "text-indigo-700" : ""
               }`}
             >
-              Conversations ({conNum})
+              {lang === "lt" ? "Pokalbiai" : "Conversations"} ({conNum})
             </Link>
           )}
           {currentUser && (
@@ -118,16 +135,16 @@ const Toolbar: React.FC = () => {
                 activeLink === "chatPage" ? "text-indigo-700" : ""
               }`}
             >
-              Public Room
+              {lang === "lt" ? "Viešas kambarys" : "Public Room"}
             </Link>
           )}
         </div>
 
-        {/* Right side: avatar + logout */}
+        {/* 🔚 Dešinė: avatar + logout */}
         <div className="flex items-center gap-3">
           {currentUser && (
             <img
-              src={currentUser.image}
+              src={currentUser.image || defaultAvatar}
               className="w-[42px] h-[42px] hover:h-[44px] hover:w-[44px] bg-indigo-500 p-[2px] rounded-full cursor-pointer"
               alt="avatar"
               onClick={goToProfile}
@@ -136,10 +153,13 @@ const Toolbar: React.FC = () => {
           {currentUser && (
             <button
               type="button"
-              onClick={logOut}
+              onClick={() => {
+                setCurrentUser(null);
+                navigate("/login");
+              }}
               className="text-white bg-indigo-500 hover:bg-indigo-400 font-medium rounded-lg text-sm px-4 py-2"
             >
-              Log out
+              {lang === "lt" ? "Atsijungti" : "Log out"}
             </button>
           )}
         </div>
