@@ -58,7 +58,7 @@ const Toolbar: React.FC = () => {
   }
 
   return (
-    <div className="flex justify-center items-center w-full bg-white border-b border-gray-200 px-4 shadow h-[70px]">
+    <div className="flex justify-center items-center w-full bg-white/70 backdrop-blur-md border-b border-gray-200 px-4 shadow h-[70px]">
       <div className="flex items-center justify-between w-full max-w-7xl relative">
         {/* 🔘 Kairė: kalba + tema */}
         <div className="flex gap-4 items-center">
@@ -78,7 +78,11 @@ const Toolbar: React.FC = () => {
               onChange={() => setTheme(theme === "light" ? "dark" : "light")}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-indigo-600 transition-colors duration-300" />
+            <div
+              className={`w-11 h-6 rounded-full transition-colors duration-300 ${
+                theme === "dark" ? "bg-gray-600 peer-checked:bg-gray-600" : "bg-gray-300 peer-checked:bg-indigo-600"
+              }`}
+            />
             <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 peer-checked:translate-x-full" />
           </label>
         </div>
@@ -138,6 +142,19 @@ const Toolbar: React.FC = () => {
               {lang === "lt" ? "Viešas kambarys" : "Public Room"}
             </Link>
           )}
+
+          {/* Tik adminui rodyti Admin Panel */}
+          {currentUser?.role === "admin" && (
+            <Link
+              to="/admin"
+              onClick={() => handleLinkClick("adminPanel")}
+              className={`py-2 px-3 text-gray-800 hover:text-indigo-600 ${
+                activeLink === "adminPanel" ? "text-indigo-700" : ""
+              }`}
+            >
+              {lang === "lt" ? "Administratoriaus pultas" : "Admin Panel"}
+            </Link>
+          )}
         </div>
 
         {/* 🔚 Dešinė: avatar + logout */}
@@ -145,7 +162,9 @@ const Toolbar: React.FC = () => {
           {currentUser && (
             <img
               src={currentUser.image || defaultAvatar}
-              className="w-[42px] h-[42px] hover:h-[44px] hover:w-[44px] bg-indigo-500 p-[2px] rounded-full cursor-pointer"
+              className={`w-[42px] h-[42px] hover:h-[44px] hover:w-[44px] p-[2px] rounded-full cursor-pointer ${
+                theme === "dark" ? "bg-gray-700" : "bg-indigo-500"
+              }`}
               alt="avatar"
               onClick={goToProfile}
             />
@@ -157,7 +176,11 @@ const Toolbar: React.FC = () => {
                 setCurrentUser(null);
                 navigate("/login");
               }}
-              className="text-white bg-indigo-500 hover:bg-indigo-400 font-medium rounded-lg text-sm px-4 py-2"
+              className={`${
+                theme === "dark"
+                  ? "bg-gray-700 hover:bg-gray-600 text-white"
+                  : "bg-indigo-500 hover:bg-indigo-400 text-white"
+              } font-medium rounded-lg text-sm px-4 py-2 transition`}
             >
               {lang === "lt" ? "Atsijungti" : "Log out"}
             </button>

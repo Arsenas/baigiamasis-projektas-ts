@@ -12,7 +12,7 @@ export interface PostAuthResponse {
 
 //Post funkcija
 
-async function postAuth(endpoint: string, data: any, token?: string): Promise<PostAuthResponse> {
+async function postAuth<T = PostAuthResponse>(endpoint: string, data: any, token?: string): Promise<T> {
   try {
     const res = await fetch(baseUrl + endpoint, {
       method: "POST",
@@ -27,13 +27,19 @@ async function postAuth(endpoint: string, data: any, token?: string): Promise<Po
 
     if (!res.ok) {
       console.error("❌ Backend responded with error status:", res.status);
-      return { error: true, message: result.message || "Server responded with an error" };
+      return {
+        error: true,
+        message: result.message || "Server responded with an error",
+      } as T;
     }
 
-    return result;
+    return result as T;
   } catch (error) {
     console.error("HTTP POST error:", error);
-    return { error: true, message: "Network error" };
+    return {
+      error: true,
+      message: "Network error",
+    } as T;
   }
 }
 
@@ -42,6 +48,7 @@ async function get(endpoint: string, token?: string): Promise<PostAuthResponse> 
     const res = await fetch(baseUrl + endpoint, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
     });

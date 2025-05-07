@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
+import { useTheme } from "../context/ThemeContext";
 
 // Tipas naudotojo propsams
 interface User {
@@ -17,30 +18,37 @@ interface Props {
 const SingleUserCard: React.FC<Props> = ({ user }) => {
   const navigate = useNavigate();
   const { currentUser } = mainStore();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <div
       key={user._id}
-      className="bg-white flex items-center justify-start w-full rounded-xl shadow-lg p-4 gap-6 transition hover:shadow-xl"
+      className="bg-white flex flex-col sm:flex-row items-center justify-between w-full rounded-2xl shadow-lg p-5 gap-4 hover:shadow-xl transition duration-300"
     >
-      {/* Avatar with enforced square ratio and circular crop */}
-      <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-indigo-500 shrink-0">
-        <img src={user.image} alt={`${user.username}'s avatar`} className="w-full h-full object-cover" />
+      {/* Avatar and Username */}
+      <div className="flex items-center gap-4 w-full sm:w-auto">
+        <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-200 shadow-sm shrink-0">
+          <img src={user.image} alt={`${user.username}'s avatar`} className="w-full h-full object-cover" />
+        </div>
+        <p className="text-xl font-semibold text-gray-800">{user.username}</p>
       </div>
 
-      {/* Username + Message button aligned on opposite sides */}
-      <div className="flex flex-col [@media(min-width:300px)]:flex-row justify-between items-start sm:items-center w-full gap-2 sm:gap-0">
-        <p className="text-lg sm:text-xl font-medium text-gray-800">{user.username}</p>
-        {currentUser && (
-          <button
-            type="button"
-            onClick={() => navigate(`/profile/${user.username}`)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-lg text-sm sm:text-base"
-          >
-            Message
-          </button>
-        )}
-      </div>
+      {/* Divider for small screens */}
+      <hr className="sm:hidden w-full border-gray-200" />
+
+      {/* Message button */}
+      {currentUser && (
+        <button
+          type="button"
+          onClick={() => navigate(`/profile/${user.username}`)}
+          className={`font-medium rounded-full text-sm px-5 py-2.5 transition ${
+            isDark ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-indigo-600 hover:bg-indigo-500 text-white"
+          }`}
+        >
+          Message
+        </button>
+      )}
     </div>
   );
 };

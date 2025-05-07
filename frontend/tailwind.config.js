@@ -26,5 +26,9 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+    require("tailwindcss-filters"), // ✅ Needed for backdrop-blur in older setups
+  ],
 };

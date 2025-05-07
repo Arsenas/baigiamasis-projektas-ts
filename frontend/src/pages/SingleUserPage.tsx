@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
+import { useTheme } from "../context/ThemeContext";
 
 interface User {
   _id: string;
@@ -18,7 +19,8 @@ const SingleUserPage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
   const [user, setUser] = useState<User | null>(null);
   const { currentUser, token } = mainStore();
-
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -111,12 +113,27 @@ const SingleUserPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center  py-12">
-      <div className="bg-white w-[500px] p-5 rounded-3xl shadow-2xl flex flex-col items-center">
-        {/* ✅ Profile image centered inside the box */}
-        <img src={user?.image} className="rounded-full h-[200px] w-[200px] shadow-md p-2 bg-white mb-5" alt="Profile" />
+    <div
+      className="min-h-screen flex items-center justify-center py-12 px-4 bg-cover bg-center relative"
+      style={{
+        backgroundImage: `url(${user?.wallpaperUrl || "/default-wallpaper.jpg"})`,
+      }}
+    >
+      {/* Overlay blur for readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-0" />
 
-        <p className="text-3xl font-semibold text-gray-600 mb-6">{user?.username}</p>
+      {/* Profile card */}
+      <div className="relative z-10 bg-white max-w-xl w-full p-8 rounded-3xl shadow-2xl flex flex-col items-center">
+        <img src={user?.image} className="rounded-full h-40 w-40 shadow-md p-1 bg-white mb-4" alt="Profile" />
+        <h1 className="text-3xl font-bold text-gray-800 mb-1">{user?.username}</h1>
+
+        <p className="text-sm text-gray-500 mb-6 italic text-center px-4">
+          {user?.description?.trim() ? user.description : "This user hasn’t written a description yet."}
+        </p>
+
+        {currentUser?._id === user?._id && (
+          <p className="text-xs text-indigo-600 mb-4 font-medium">This is your profile</p>
+        )}
 
         {currentUser ? (
           <div className="w-full flex flex-col gap-3">
@@ -139,10 +156,14 @@ const SingleUserPage: React.FC = () => {
 
             <button
               type="button"
-              onClick={sendMessage}
-              className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+              onClick={() => nav("/login")}
+              className={`mt-5 text-sm px-5 py-2.5 rounded-full font-medium transition ${
+                theme === "dark"
+                  ? "bg-gray-700 hover:bg-gray-600 text-white"
+                  : "bg-indigo-600 hover:bg-indigo-500 text-white"
+              }`}
             >
-              Send a message
+              Send Message
             </button>
 
             {error && <ErrorComp error={error} />}
@@ -152,7 +173,11 @@ const SingleUserPage: React.FC = () => {
           <button
             type="button"
             onClick={() => nav("/login")}
-            className="text-white mt-5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+            className={`text-sm px-5 py-2.5 rounded-full font-medium transition ${
+              theme === "dark"
+                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                : "bg-indigo-600 hover:bg-indigo-500 text-white"
+            }`}
           >
             Login to send a message
           </button>
