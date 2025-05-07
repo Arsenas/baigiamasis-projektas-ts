@@ -58,7 +58,7 @@ const Homepage: React.FC = () => {
         const res = await http.get("/get-all-users");
 
         if (!res.error) {
-          let otherUsers: User[] = res.data;
+          let otherUsers: User[] = res.data.filter((u: User) => u.username.toLowerCase() !== "admin");
 
           if (currentUser) {
             otherUsers = otherUsers.filter((user) => user.username !== currentUser.username);

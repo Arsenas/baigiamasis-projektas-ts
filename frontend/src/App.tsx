@@ -20,7 +20,7 @@ import SingleUserPage from "./pages/SingleUserPage";
 import Conversations from "./pages/Conversations";
 import AllConversations from "./pages/AllConversations";
 import ChatPage from "./pages/ChatPage";
-import AdminPanel from "./pages/AdminPanel";
+import AdminPanelWrapper from "./pages/AdminPanelWrapper";
 
 const App: React.FC = () => {
   const { theme } = useTheme();
@@ -42,8 +42,10 @@ const App: React.FC = () => {
   const gradientClass =
     theme === "dark" ? "from-gray-900 via-gray-800 to-black" : "from-indigo-700 via-fuchsia-600 to-rose-600";
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}"); // Gauti vartotoją iš localStorage arba global state
+
   return (
-    <div className="App h-screen">
+    <div className="App min-h-screen">
       <BrowserRouter>
         {/* 💫 Animated background gradient */}
         <div
@@ -61,7 +63,7 @@ const App: React.FC = () => {
           <Route path="/allConversations" element={<AllConversations />} />
           <Route path="/conversation/:conversationId" element={<Conversations />} />
           <Route path="/chatPage" element={<ChatPage />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin" element={<AdminPanelWrapper />} />
         </Routes>
       </BrowserRouter>
     </div>

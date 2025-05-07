@@ -42,6 +42,7 @@ async function get(endpoint: string, token?: string): Promise<PostAuthResponse> 
     const res = await fetch(baseUrl + endpoint, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
     });

@@ -138,6 +138,19 @@ const Toolbar: React.FC = () => {
               {lang === "lt" ? "Viešas kambarys" : "Public Room"}
             </Link>
           )}
+
+          {/* Tik adminui rodyti Admin Panel */}
+          {currentUser?.role === "admin" && (
+            <Link
+              to="/admin"
+              onClick={() => handleLinkClick("adminPanel")}
+              className={`py-2 px-3 text-gray-800 hover:text-indigo-600 ${
+                activeLink === "adminPanel" ? "text-indigo-700" : ""
+              }`}
+            >
+              {lang === "lt" ? "Administratoriaus pultas" : "Admin Panel"}
+            </Link>
+          )}
         </div>
 
         {/* 🔚 Dešinė: avatar + logout */}

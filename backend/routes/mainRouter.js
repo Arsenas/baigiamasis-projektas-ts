@@ -5,7 +5,7 @@ const { Types } = require("mongoose");
 // ⛑️ Middleware
 const checkOwnershipOrAdmin = require("../middleware/checkOwnershipOrAdmin");
 const checkRole = require("../middleware/checkRole");
-const authMiddle = require("../middleware/auth");
+const auth = require("../middleware/auth");
 
 // 🧠 Validators
 const {
@@ -19,6 +19,7 @@ const {
 // 🧩 Schemas
 const Conversation = require("../schemas/conversationSchema");
 const User = require("../schemas/userSchema");
+const Message = require("../schemas/messageSchema"); // būtina dėl delete-message-for-me
 
 // 🧠 Controllers
 const {
@@ -27,7 +28,6 @@ const {
   changeImage,
   changeUsername,
   changePassword,
-  getAllUsers,
   getUserByUsername,
   sendMessage,
   sendPublicMessage,
@@ -46,53 +46,47 @@ const {
   getNonParticipants,
 } = require("../controllers/mainController");
 
+const { getAllUsers, deleteUser, changeUserRole } = require("../controllers/adminController");
+
 // 🔐 Auth Routes
 Router.post("/register", registerUserValidate, register);
 Router.post("/login", loginUserValidate, login);
-Router.post("/change-image", authMiddle, imageValidate, changeImage);
-Router.post("/change-username", authMiddle, usernameValidate, changeUsername);
-Router.post("/change-password", authMiddle, registerUserValidate, changePassword);
-Router.post("/delete-account", authMiddle, deleteAcc);
+Router.post("/change-image", auth, imageValidate, changeImage);
+Router.post("/change-username", auth, usernameValidate, changeUsername);
+Router.post("/change-password", auth, registerUserValidate, changePassword);
+Router.post("/delete-account", auth, deleteAcc);
 
 // 📨 Messages
-Router.post("/send-message", authMiddle, messageValidate, sendMessage);
+Router.post("/send-message", auth, messageValidate, sendMessage);
 Router.get("/get-messages/:sender/:recipient", getMessages);
-Router.post("/like-message", authMiddle, likeMessage);
-Router.post("/like-message-private", authMiddle, likeMessagePrivate);
-Router.post("/delete-message/:messageId", authMiddle, deleteMessage);
-Router.delete("/permanent-delete-message/:messageId", authMiddle, deleteMessagePermanent);
+Router.post("/like-message", auth, likeMessage);
+Router.post("/like-message-private", auth, likeMessagePrivate);
+Router.post("/delete-message/:messageId", auth, deleteMessage);
+Router.delete("/permanent-delete-message/:messageId", auth, deleteMessagePermanent);
+
 // 📨 DELETE Message for current user (Unsend for me)
-Router.post("/delete-message-for-me/:messageId", authMiddle, async (req, res) => {
+Router.post("/delete-message-for-me/:messageId", auth, async (req, res) => {
   const { messageId } = req.params;
-  const userId = req.user._id; // Assuming you're using authentication middleware
+  const userId = req.user._id;
 
   try {
-    // Find the message by its ID
     const message = await Message.findById(messageId);
     if (!message) {
       return res.status(404).json({ error: "Message not found" });
     }
 
-    // If the message is already deleted, return early
     if (message.status === "deleted") {
       return res.status(400).json({ error: "Message is already deleted" });
     }
 
-    // Remove the user from the 'seenBy' list or mark it as deleted for this user
     if (!message.seenBy) {
       message.seenBy = [];
     }
 
-    // Remove user from the 'seenBy' list (if present)
     message.seenBy = message.seenBy.filter((user) => user !== userId);
-
-    // Mark the message as deleted for the current user
     message.status = "deleted";
 
-    // Save the updated message
     await message.save();
-
-    // Emit the event to notify others (if needed)
     req.io.emit("messagePermanentlyDeleted", { messageId });
 
     res.status(200).json({ message: "Message unsent for you" });
@@ -103,63 +97,24 @@ Router.post("/delete-message-for-me/:messageId", authMiddle, async (req, res) =>
 });
 
 // 👤 Users
-Router.get("/get-all-users", getAllUsers);
 Router.get("/get-user/:username", getUserByUsername);
 
 // 💬 Conversations
 Router.get("/conversations/:userID", getUserConversations);
 Router.get("/conversation/:conversationId", getConversationById);
 Router.get("/conversation/:conversationId/non-participants", getNonParticipants);
-Router.post("/conversation/:conversationId/:username", authMiddle, addUser);
+Router.post("/conversation/:conversationId/:username", auth, addUser);
 Router.get("/get-public-room-messages", getPublicRoomMessages);
-Router.post("/send-public-message", authMiddle, sendPublicMessage);
+Router.post("/send-public-message", auth, sendPublicMessage);
+Router.post("/deleteConversation/:conversationId", auth, deleteConversation);
 
-Router.post("/deleteConversation/:conversationId", authMiddle, deleteConversation);
+// 🛠️ Admin (tik su auth)
+Router.get("/get-all-users", getAllUsers);
+Router.post("/admin/delete-user/:id", auth, deleteUser);
+Router.patch("/admin/change-role/:id", auth, changeUserRole);
 
-// 🛠️ Admin
-Router.post("/admin/delete-user/:userId", authMiddle, checkRole("admin"), async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    console.log("🧪 Deleting user ID:", userId);
-
-    if (!Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ success: false, message: "Invalid user ID" });
-    }
-
-    const deleted = await User.findByIdAndDelete(userId);
-    if (!deleted) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    return res.status(200).json({ success: true, message: "User deleted successfully" });
-  } catch (err) {
-    console.error("❌ Error deleting user:", err);
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-Router.patch("/admin/change-role/:userId", authMiddle, checkRole("admin"), async (req, res) => {
-  try {
-    const { role } = req.body;
-    const { userId } = req.params;
-
-    if (!["admin", "user"].includes(role)) {
-      return res.status(400).json({ success: false, message: "Invalid role" });
-    }
-
-    const updated = await User.findByIdAndUpdate(userId, { role });
-    if (!updated) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    res.json({ success: true, message: "Role updated" });
-  } catch (err) {
-    console.error("❌ Error updating role:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-Router.post("/update-profile", authMiddle, async (req, res) => {
+// 📝 Profile update
+Router.post("/update-profile", auth, async (req, res) => {
   try {
     const updated = await User.findByIdAndUpdate(
       req.user._id,
