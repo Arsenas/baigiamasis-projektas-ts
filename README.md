@@ -1,8 +1,9 @@
 # 🧠 Baigiamasis projektas – Real-Time Chat Platforma
 
-Tai pilnai veikianti realaus laiko pokalbių platforma su galimybe registruotis, bendrauti viešame ir privačiame pokalbių kambaryje, valdyti dalyvius, trinti ir mėgti žinutes, bei turinio valdymu pagal vartotojo rolę. 
-
-Projektas sukurtas naudojant **React (Create React App)** su **TypeScript**, **Tailwind CSS** stiliui, ir **Node.js/Express + MongoDB** backendui. Duomenų perdavimui realiu laiku naudojamas **Socket.IO**.
+Tai pilnai veikianti realaus laiko pokalbių platforma su galimybe registruotis, bendrauti 
+viešame ir privačiame pokalbių kambaryje, valdyti dalyvius, trinti ir mėgti žinutes, bei turinio valdymu pagal vartotojo 
+rolę. Projektas sukurtas naudojant **React (Create React App)** su **TypeScript**, **Tailwind CSS** stiliui, 
+ir **Node.js/Express + MongoDB** backendui. Duomenų perdavimui realiu laiku naudojamas **Socket.IO**.
 
 ---
 
