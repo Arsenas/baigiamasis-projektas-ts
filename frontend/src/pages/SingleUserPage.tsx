@@ -111,7 +111,7 @@ const SingleUserPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 py-12">
+    <div className="min-h-screen flex items-center justify-center  py-12">
       <div className="bg-white w-[500px] p-5 rounded-3xl shadow-2xl flex flex-col items-center">
         {/* ✅ Profile image centered inside the box */}
         <img src={user?.image} className="rounded-full h-[200px] w-[200px] shadow-md p-2 bg-white mb-5" alt="Profile" />

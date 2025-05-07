@@ -84,17 +84,17 @@ const Homepage: React.FC = () => {
   return (
     <div className={`flex flex-col gap-3 relative`}>
       {/* Turinys ant viršaus */}
-      <div className="flex flex-col w-full absolute top-[70px]">
-        <div className="flex flex-col lg:mx-[100px] mx-[20px] bg-white p-6 rounded-2xl">
+      <div className="flex flex-col w-full absolute top-[70px] px-8">
+        <div className="w-full max-w-[1400px] mx-auto bg-white p-6 rounded-2xl">
           <div className="bg-white mt-5 p-5 flex shadow-2xl">
             <p className="font-semibold text-gray-600 rounded-2xl text-2xl">Registered Users:</p>
           </div>
 
           {/* Kiekvienas vartotojas atvaizduojamas per komponentą */}
-          <div className="mt-5 flex flex-wrap gap-[50px] w-full">
+          <div className="mt-5 grid gap-6 w-full grid-cols-1 xs:grid-cols-2 xxl:grid-cols-3">
             {Array.isArray(users) &&
               users.map((user) => (
-                <div key={user._id} className="xl:w-[500px] w-full">
+                <div key={user._id} className="w-full">
                   <SingleUserCard user={user} />
                 </div>
               ))}

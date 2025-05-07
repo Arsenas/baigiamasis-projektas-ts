@@ -29,7 +29,7 @@ const SingleUserCard: React.FC<Props> = ({ user }) => {
       </div>
 
       {/* Username + Message button aligned on opposite sides */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-2 sm:gap-0">
+      <div className="flex flex-col [@media(min-width:300px)]:flex-row justify-between items-start sm:items-center w-full gap-2 sm:gap-0">
         <p className="text-lg sm:text-xl font-medium text-gray-800">{user.username}</p>
         {currentUser && (
           <button

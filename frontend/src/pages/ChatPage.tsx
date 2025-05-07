@@ -53,7 +53,6 @@ const ChatPage: React.FC = () => {
     newSocket.on("messagePermanentlyDeleted", ({ messageId }: { messageId: string }) => {
       removeMessage(messageId); // Remove message from state and re-render immediately
     });
-    
 
     return () => {
       newSocket.close();
@@ -156,20 +155,18 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col p-16">
-      <div className="flex">
-        <div className="flex flex-col w-full bg-white rounded-xl overflow-hidden">
-          <div className="flex items-center gap-3 bg-gray-100 p-4">
-            <div className="flex flex-col">
-              <p className="text-gray-500 font-semibold">Chat Room</p>
-            </div>
+    <div className="flex flex-col items-center w-full mt-[70px] px-[10px] sm:px-[20px]">
+      <div className="w-full max-w-[1400px] bg-white rounded-2xl shadow-2xl p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xl font-semibold text-gray-700">Chat Room</p>
           </div>
 
           {currentUser ? (
             <>
               <div
                 ref={containerRef}
-                className="flex flex-col min-h-[620px] max-h-[620px] p-3 overflow-auto"
+                className="flex flex-col min-h-[620px] max-h-[620px] p-3 overflow-auto bg-gray-50 rounded-xl"
                 onScroll={handleScroll}
               >
                 {messages.map((message, i) => (
@@ -178,14 +175,14 @@ const ChatPage: React.FC = () => {
                     message={message}
                     handleLikeMessage={handleLikeMessage}
                     handleDeleteMessage={handleDeleteMessage}
-                    socket={socket} // Passing socket as prop
-                    removeMessage={removeMessage} // Passing removeMessage as prop
+                    socket={socket}
+                    removeMessage={removeMessage}
                   />
                 ))}
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="flex p-3 bg-gray-100 rounded-xl">
+              <div className="flex p-3 mt-4 bg-gray-100 rounded-xl">
                 <div className="w-full flex gap-2 items-center text-gray-500">
                   <input
                     ref={messageRef}
