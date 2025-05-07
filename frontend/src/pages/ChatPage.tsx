@@ -129,6 +129,15 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await http.postAuth(`/delete-message/${messageId}`, {}, token);
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    } catch (err) {
+      console.error("Failed to delete message", err);
+    }
+  };
+
   const handleScroll = () => {
     if (containerRef.current) {
       const { scrollTop } = containerRef.current;
@@ -154,7 +163,12 @@ const ChatPage: React.FC = () => {
                 onScroll={handleScroll}
               >
                 {messages.map((message, i) => (
-                  <SingleMessage key={i} message={message} handleLikeMessage={handleLikeMessage} />
+                  <SingleMessage
+                    key={i}
+                    message={message}
+                    handleLikeMessage={handleLikeMessage}
+                    handleDeleteMessage={handleDeleteMessage}
+                  />
                 ))}
                 <div ref={messagesEndRef} />
               </div>

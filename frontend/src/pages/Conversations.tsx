@@ -190,7 +190,15 @@ const Conversations: React.FC = () => {
       console.error("Failed to like message:", error);
     }
   };
-
+  // ------------------ DELETE MESSAGE ------------------
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await http.postAuth(`/delete-message/${messageId}`, {}, token);
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    } catch (err) {
+      console.error("Failed to delete message", err);
+    }
+  };
   // ------------------ LOAD EARLIER ------------------
   const handleLoadEarlier = async () => {
     if (!currentUser || !selectedUser) return;
@@ -286,6 +294,7 @@ const Conversations: React.FC = () => {
                     message={msg}
                     participants={participants ?? []}
                     handleLikeMessage={handleLikeMessage}
+                    handleDeleteMessage={handleDeleteMessage}
                   />
                 ))}
                 {successMsg && <SuccessComp msg={successMsg} />}
