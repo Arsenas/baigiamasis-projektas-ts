@@ -1,11 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-interface User {
-  _id: string;
-  username: string;
-  image: string;
-}
+import type { User, Message } from "../types"; // ✅ IMPORT shared types
 
 interface StoreState {
   currentUser: User | null;
@@ -13,6 +8,14 @@ interface StoreState {
   users: User[];
   conNum: number;
   grid: boolean;
+
+  messages: Message[];
+
+  // ✅ supports both: (fn) => ..., and array value
+  setMessages: (val: Message[] | ((prev: Message[]) => Message[])) => void;
+
+  removeMessage: (id: string) => void;
+
   setGrid: (val: boolean) => void;
   setToken: (val: string) => void;
   setCurrentUser: (val: User | null) => void;
@@ -28,6 +31,22 @@ const useStore = create<StoreState>()(
       users: [],
       conNum: 0,
       grid: false,
+
+      messages: [],
+
+      setMessages: (valOrFn) => {
+        if (typeof valOrFn === "function") {
+          set((state) => ({ messages: valOrFn(state.messages) }));
+        } else {
+          set({ messages: valOrFn });
+        }
+      },
+
+      removeMessage: (id) =>
+        set((state) => ({
+          messages: state.messages.filter((msg) => msg._id !== id),
+        })),
+
       setGrid: (val) => set({ grid: val }),
       setToken: (val) => set({ token: val }),
       setCurrentUser: (val) => set({ currentUser: val }),
@@ -35,7 +54,7 @@ const useStore = create<StoreState>()(
       setConNum: (val) => set({ conNum: val }),
     }),
     {
-      name: "main-store", // LocalStorage key
+      name: "main-store",
     }
   )
 );

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
-import type { Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
+import { useNavigate, useParams } from "react-router-dom";
 import http from "../plugins/http";
 import mainStore from "../store/mainStore";
 import SingleMessage from "../components/SingleMessage";
-import { useNavigate, useParams } from "react-router-dom";
 import SuccessComp from "../components/SuccessComp";
 import ErrorComp from "../components/ErrorComp";
 import type { Message, User } from "../types";
@@ -14,8 +14,9 @@ const Conversations: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const { removeMessage } = mainStore();
   const { currentUser, token } = mainStore();
-  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
+  const [socket, setSocket] = useState<typeof Socket | null>(null); // Corrected: Socket Type
   const [users, setUsers] = useState<User[] | null>(null);
   const [participants, setParticipants] = useState<User[] | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -24,7 +25,7 @@ const Conversations: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showButton, setShowButton] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // Corrected: setError
 
   const { conversationId } = useParams<{ conversationId: string }>();
   const nav = useNavigate();
@@ -34,31 +35,72 @@ const Conversations: React.FC = () => {
     const newSocket = io("http://localhost:2000");
     setSocket(newSocket);
 
-    newSocket.on("chatMessage", (rawMessage: any) => {
+    console.log("Socket connection established", newSocket);
+
+    // Listen for new chat messages
+    newSocket.on("chatMessage", (raw: any) => {
+      console.log("Received chat message:", raw);
+      if (!raw || !raw.sender || typeof raw.sender === "string") return;
+
       const cleaned: Message = {
-        _id: rawMessage._id,
-        message: rawMessage.message,
-        sender: rawMessage.sender,
-        recipient: rawMessage.recipient,
-        timestamp: rawMessage.timestamp,
-        senderImage: rawMessage.senderImage,
-        recipientImage: rawMessage.recipientImage,
-        liked: rawMessage.liked ?? [],
+        _id: raw._id,
+        message: raw.message,
+        sender: {
+          _id: raw.sender._id,
+          username: raw.sender.username,
+          image: raw.sender.image,
+        },
+        recipient: raw.recipient,
+        timestamp: raw.timestamp,
+        liked: raw.liked ?? [],
       };
+
+      console.log("Cleaned message:", cleaned);
+
       setMessages((prev) => [...prev, cleaned]);
     });
 
-    newSocket.on("likeMessage", (messages: Message[]) => {
-      setMessages(messages);
+    newSocket.on("likeMessage", (incoming: any) => {
+      console.log("Received likeMessage event:", incoming);
+
+      if (!incoming || !incoming._id) return;
+
+      const updated: Message = {
+        _id: incoming._id,
+        message: incoming.message,
+        timestamp: incoming.timestamp,
+        liked: incoming.liked ?? [],
+        recipient: incoming.recipient,
+        sender: {
+          _id: incoming.sender._id,
+          username: incoming.sender.username,
+          image: incoming.sender.image,
+        },
+      };
+
+      setMessages((prev) => prev.map((msg) => (msg._id === updated._id ? updated : msg)));
     });
 
+    // Handle message deletion (unsend for everyone)
+    newSocket.on("messagePermanentlyDeleted", ({ messageId }: { messageId: string }) => {
+      console.log("Received socket event for message deletion:", messageId);
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    });
+
+    // Listen for message deletion (unsend for everyone or for a single user)
+    newSocket.on("messageDeleted", ({ messageId }: { messageId: string }) => {
+      console.log("Received socket event for message deletion:", messageId);
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId)); // Remove message from UI
+    });
+
+    // Handle message reception
     newSocket.on("messageReceived", fetchNonParticipants);
 
+    // Cleanup on unmount
     return () => {
       newSocket.close();
     };
   }, []);
-
   // ------------------ FETCH CONVERSATION ------------------
   useEffect(() => {
     const fetchConversation = async () => {
@@ -122,21 +164,22 @@ const Conversations: React.FC = () => {
     const content = messageRef.current.value.trim();
     if (content.length < 1 || content.length > 200) return;
 
-    const message: Message = {
-      sender: currentUser.username,
-      recipient: selectedUser.username,
+    const message = {
+      sender: {
+        _id: currentUser._id,
+        username: currentUser.username,
+        image: currentUser.image ?? "",
+      },
+      recipient: selectedUser.username, // still a string unless you're populating
       message: content,
       timestamp: new Date().toISOString(),
-      senderImage: currentUser.image,
-      recipientImage: selectedUser.image ?? "",
+      liked: [],
     };
 
     try {
       const res = await http.postAuth("/send-message", message, token);
       if (!res.error) {
-        const newMsg = { ...message, _id: res.data._id };
-        setMessages((prev) => [...prev, newMsg]);
-        socket?.emit("chatMessage", newMsg);
+        socket?.emit("chatMessage", res.data);
         messageRef.current.value = "";
       } else {
         setErrorMsg(res.message ?? "Message send failed.");
@@ -148,31 +191,93 @@ const Conversations: React.FC = () => {
 
   // ------------------ LIKE MESSAGE ------------------
   const handleLikeMessage = async (messageId: string) => {
-    if (!currentUser || !selectedUser) return;
+    if (!currentUser) return;
     try {
       const res = await http.postAuth(
-        "/like-message-private",
+        "/like-message",
         {
           messageId,
           username: currentUser.username,
-          recipient: selectedUser,
-          sender: currentUser,
         },
         token
       );
-      if (!res.error) socket?.emit("likeMessage", res.data);
+
+      if (!res.error) {
+        // Replace updated message in state
+        setMessages((prev) => prev.map((msg) => (msg._id === res.data._id ? res.data : msg)));
+
+        socket?.emit("likeMessage", res.data); // only needed if others should update in real-time
+      }
     } catch (error) {
       console.error("Failed to like message:", error);
     }
   };
 
+  // ------------------ DELETE MESSAGE Permanent ------------------
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      // Step 1: Delete the message from the backend
+      await http.postAuth(`/delete-message/${messageId}`, {}, token);
+
+      // Step 2: Remove the message from the local state (UI)
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+
+      // Step 3: Emit the socket event to notify other users about the message deletion
+      socket?.emit("messageDeleted", { messageId });
+
+      console.log(`Message ${messageId} deleted successfully.`);
+    } catch (err) {
+      console.error("Failed to delete message", err);
+    }
+  };
+
+  // ------------- DELETE MESSAGE only for me -------------
+  const handleDeleteForMe = async (messageId: string) => {
+    try {
+      // Find the message by its ID from the messages array
+      const message = messages.find((msg) => msg._id === messageId);
+      if (!message || !message._id) {
+        console.error("Message not found or missing _id");
+        return;
+      }
+
+      // Step 1: Call backend API to delete the message only for the current user (unsend for me)
+      await http.postAuth(`/delete-message-for-me/${message._id}`, {}, token);
+
+      // Step 2: Emit the event for the socket connection to notify others
+      socket?.emit("messageDeleted", { messageId: message._id });
+
+      // Step 3: Remove the message from the local state immediately (UI update)
+      removeMessage(message._id); // This will remove the message from the UI instantly
+
+      console.log(`Message ${message._id} unsent for me successfully.`);
+    } catch (err) {
+      console.error("❌ Failed to unsend for me:", err);
+    }
+  };
   // ------------------ LOAD EARLIER ------------------
   const handleLoadEarlier = async () => {
     if (!currentUser || !selectedUser) return;
     try {
       const res = await http.get(`/get-earlier-messages/${currentUser.username}/${selectedUser.username}`);
       if (!res.error) {
-        setMessages((prev) => [...res.data, ...prev]);
+        const cleanedMessages: Message[] = res.data.map((msg: any) => ({
+          _id: msg._id,
+          message: msg.message,
+          sender:
+            typeof msg.sender === "string"
+              ? { _id: msg.sender, username: "Unknown" }
+              : {
+                  _id: msg.sender._id,
+                  username: msg.sender.username,
+                  image: msg.sender.image,
+                },
+          recipient: msg.recipient,
+          timestamp: msg.timestamp,
+          liked: msg.liked ?? [],
+        }));
+
+        setMessages((prev) => [...cleanedMessages, ...prev]);
       }
     } catch (error) {
       console.error("Error loading earlier messages:", error);
@@ -186,7 +291,11 @@ const Conversations: React.FC = () => {
       if (!res.error) {
         setDisplayUsers(false);
         setSuccessMsg(res.message ?? null);
-        const newUser: User = { username };
+        const newUser: User = {
+          _id: res.data.user._id, // or whatever your backend returns
+          username: res.data.user.username,
+          image: res.data.user.image ?? "", // fallback in case it's missing
+        };
         setParticipants((prev) => (prev ? [...prev, newUser] : [newUser]));
         socket?.emit("userAdded");
         setTimeout(() => setSuccessMsg(null), 3000);
@@ -201,7 +310,7 @@ const Conversations: React.FC = () => {
 
   // ------------------ RENDER ------------------
   return (
-    <div className="flex flex-col bg-gradient-to-r from-indigo-500 to-violet-400 p-16">
+    <div className="flex flex-col p-16">
       <div className="flex gap-3">
         {currentUser ? (
           <div className="w-full flex gap-3">
@@ -237,10 +346,13 @@ const Conversations: React.FC = () => {
               >
                 {messages.map((msg, i) => (
                   <SingleMessage
-                    key={i}
+                    key={msg._id}
                     message={msg}
                     participants={participants ?? []}
                     handleLikeMessage={handleLikeMessage}
+                    handleDeleteMessage={handleDeleteMessage}
+                    socket={socket}
+                    removeMessage={removeMessage}
                   />
                 ))}
                 {successMsg && <SuccessComp msg={successMsg} />}
@@ -264,6 +376,12 @@ const Conversations: React.FC = () => {
                     type="text"
                     placeholder="Type your message"
                     className="bg-gray-50 w-full border border-gray-300 text-sm rounded-lg p-2.5"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
                   />
                   <button onClick={sendMessage}>
                     <svg

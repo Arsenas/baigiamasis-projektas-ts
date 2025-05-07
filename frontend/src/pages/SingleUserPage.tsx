@@ -77,14 +77,17 @@ const SingleUserPage: React.FC = () => {
     const timestamp = new Date().toISOString();
 
     const messageData = {
-      sender: currentUser.username,
+      sender: {
+        _id: currentUser._id,
+        username: currentUser.username,
+        image: currentUser.image,
+      },
       recipient: user.username,
+      recipientImage: user.image,
       message: msgText,
       timestamp,
-      senderImage: currentUser.image,
-      recipientImage: user.image,
+      liked: [],
     };
-
     try {
       const res = await http.postAuth("/send-message", messageData, token);
 
@@ -108,51 +111,52 @@ const SingleUserPage: React.FC = () => {
   }
 
   return (
-    <div className="h-screen relative">
-      <div className="bg-gradient-to-r from-indigo-500 to-violet-400 p-3 h-1/3"></div>
-      <div className="bg-white w-[600px] p-5 mx-auto container rounded-3xl absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="flex h-full w-full relative flex-col">
-          <img
-            src={user?.image}
-            className="rounded-full h-[200px] w-[200px] absolute left-1/2 transform -translate-x-1/2 -top-1/2 shadow-xl p-3 backdrop-blur"
-            alt="Profile"
-          />
-          <p className="pt-[180px] text-3xl font-semibold text-gray-600">{user?.username}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 py-12">
+      <div className="bg-white w-[500px] p-5 rounded-3xl shadow-2xl flex flex-col items-center">
+        {/* ✅ Profile image centered inside the box */}
+        <img src={user?.image} className="rounded-full h-[200px] w-[200px] shadow-md p-2 bg-white mb-5" alt="Profile" />
 
-          {currentUser ? (
-            <div className="mt-10 flex flex-col gap-3">
-              <label htmlFor="message" className="block mb-2 text-sm text-start font-medium text-gray-900">
-                Your message
-              </label>
-              <textarea
-                id="message"
-                rows={4}
-                ref={messageRef}
-                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300"
-                placeholder="Write your thoughts here..."
-              ></textarea>
+        <p className="text-3xl font-semibold text-gray-600 mb-6">{user?.username}</p>
 
-              <button
-                type="button"
-                onClick={sendMessage}
-                className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
-              >
-                Send a message
-              </button>
+        {currentUser ? (
+          <div className="w-full flex flex-col gap-3">
+            <label htmlFor="message" className="block text-sm font-medium text-gray-900 text-start">
+              Your message
+            </label>
+            <textarea
+              id="message"
+              rows={4}
+              ref={messageRef}
+              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300"
+              placeholder="Write your thoughts here..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+            ></textarea>
 
-              {error && <ErrorComp error={error} />}
-              {successMessage && <SuccessComp msg={successMessage} />}
-            </div>
-          ) : (
             <button
               type="button"
-              onClick={() => nav("/login")}
-              className="text-white mt-5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+              onClick={sendMessage}
+              className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
             >
-              Login to send a message
+              Send a message
             </button>
-          )}
-        </div>
+
+            {error && <ErrorComp error={error} />}
+            {successMessage && <SuccessComp msg={successMessage} />}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => nav("/login")}
+            className="text-white mt-5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+          >
+            Login to send a message
+          </button>
+        )}
       </div>
     </div>
   );

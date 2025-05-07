@@ -30,8 +30,11 @@ const {
   getAllUsers,
   getUserByUsername,
   sendMessage,
+  sendPublicMessage,
   getMessages,
   likeMessage,
+  deleteMessage,
+  deleteMessagePermanent,
   deleteAcc,
   getUserConversations,
   getConversationDetails,
@@ -56,6 +59,48 @@ Router.post("/send-message", authMiddle, messageValidate, sendMessage);
 Router.get("/get-messages/:sender/:recipient", getMessages);
 Router.post("/like-message", authMiddle, likeMessage);
 Router.post("/like-message-private", authMiddle, likeMessagePrivate);
+Router.post("/delete-message/:messageId", authMiddle, deleteMessage);
+Router.delete("/permanent-delete-message/:messageId", authMiddle, deleteMessagePermanent);
+// 📨 DELETE Message for current user (Unsend for me)
+Router.post("/delete-message-for-me/:messageId", authMiddle, async (req, res) => {
+  const { messageId } = req.params;
+  const userId = req.user._id; // Assuming you're using authentication middleware
+
+  try {
+    // Find the message by its ID
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // If the message is already deleted, return early
+    if (message.status === "deleted") {
+      return res.status(400).json({ error: "Message is already deleted" });
+    }
+
+    // Remove the user from the 'seenBy' list or mark it as deleted for this user
+    if (!message.seenBy) {
+      message.seenBy = [];
+    }
+
+    // Remove user from the 'seenBy' list (if present)
+    message.seenBy = message.seenBy.filter((user) => user !== userId);
+
+    // Mark the message as deleted for the current user
+    message.status = "deleted";
+
+    // Save the updated message
+    await message.save();
+
+    // Emit the event to notify others (if needed)
+    req.io.emit("messagePermanentlyDeleted", { messageId });
+
+    res.status(200).json({ message: "Message unsent for you" });
+  } catch (err) {
+    console.error("❌ Error unsending message:", err);
+    res.status(500).json({ error: "Failed to unsend message" });
+  }
+});
 
 // 👤 Users
 Router.get("/get-all-users", getAllUsers);
@@ -67,17 +112,9 @@ Router.get("/conversation/:conversationId", getConversationById);
 Router.get("/conversation/:conversationId/non-participants", getNonParticipants);
 Router.post("/conversation/:conversationId/:username", authMiddle, addUser);
 Router.get("/get-public-room-messages", getPublicRoomMessages);
+Router.post("/send-public-message", authMiddle, sendPublicMessage);
 
-Router.post(
-  "/deleteConversation/:conversationId",
-  authMiddle,
-  checkOwnershipOrAdmin({
-    model: Conversation,
-    idParam: "conversationId",
-    authorField: "participants",
-  }),
-  deleteConversation
-);
+Router.post("/deleteConversation/:conversationId", authMiddle, deleteConversation);
 
 // 🛠️ Admin
 Router.post("/admin/delete-user/:userId", authMiddle, checkRole("admin"), async (req, res) => {

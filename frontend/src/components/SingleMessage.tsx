@@ -1,41 +1,115 @@
-import React from "react";
-import mainStore from "../store/mainStore";
+import React, { useState } from "react";
 import type { Message } from "../types";
+import http from "../plugins/http";
+import mainStore from "../store/mainStore";
+import io from "socket.io-client";
+import { Socket } from "socket.io-client";
 
 interface Props {
   message: Message;
   handleLikeMessage: (id: string) => void;
-  participants?: any[];
+  handleDeleteMessage: (id: string) => void;
+  participants?: any[]; // Keep participants as it was
+  socket: ReturnType<typeof io> | null; // Accept socket as a prop
+  removeMessage: (id: string) => void; // Accept removeMessage as a prop
 }
 
-const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage }) => {
+const SingleMessage: React.FC<Props> = ({
+  message,
+  handleLikeMessage,
+  handleDeleteMessage,
+  participants,
+  socket,
+  removeMessage,
+}) => {
   const { currentUser } = mainStore();
-  const isCurrentUser = currentUser?.username === message.sender;
+  const { token } = mainStore();
+  const [showMenu, setShowMenu] = useState(false);
+
+  const isCurrentUser = message.sender?._id === currentUser?._id;
   const likedCount = message.liked?.length ?? 0;
 
-  const bubbleClasses = isCurrentUser ? "bg-indigo-200 justify-end text-end" : "bg-blue-50 justify-start text-start";
-  const alignItems = isCurrentUser ? "items-end" : "items-start";
-  const timeAlign = isCurrentUser ? "text-end me-10" : "text-start ms-10";
+  const containerAlign = isCurrentUser ? "items-end" : "items-start";
+  const messageAlign = isCurrentUser ? "justify-end" : "justify-start";
+  const bubbleColor = isCurrentUser ? "bg-indigo-200" : "bg-blue-50";
+  const textAlign = isCurrentUser ? "text-end me-10" : "text-start ms-10";
+
+  const handleDeleteForEveryone = async () => {
+    try {
+      // Call backend API to delete the message permanently
+      await http.deleteAuth(`/permanent-delete-message/${message._id}`, token);
+
+      // Emit the event for the socket connection
+      socket?.emit("messagePermanentlyDeleted", { messageId: message._id });
+      console.log("Socket event emitted for message:", message._id);
+
+      // Update local state by removing the message instantly
+      removeMessage(message._id ?? ""); // Ensure _id is not undefined
+    } catch (err) {
+      console.error("❌ Failed to delete for everyone:", err);
+    }
+  };
 
   return (
-    <div className={`mt-3 flex flex-col gap-1 ${alignItems}`}>
-      <div className={`flex gap-2 w-full ${isCurrentUser ? "justify-end" : ""}`}>
-        {!isCurrentUser && <img className="w-12 h-12 rounded-full p-0.5 bg-white" src={message.senderImage} alt="" />}
+    <div className={`mt-3 flex flex-col gap-1 ${containerAlign}`}>
+      <div className={`flex w-full gap-2 items-end ${messageAlign}`}>
+        {/* ⋮ Menu */}
+        {isCurrentUser && (
+          <div className="flex items-center relative h-full">
+            <svg
+              onClick={() => setShowMenu((prev) => !prev)}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 text-black hover:text-gray-700 cursor-pointer mt-[20px]"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v.01M12 12v.01M12 18v.01" />
+            </svg>
 
-        <div className="flex flex-col max-w-[70%]">
-          <div className="text-gray-400 text-sm">{message.sender}</div>
-          <div className={`flex items-center py-2 px-5 rounded-3xl relative ${bubbleClasses}`}>
+            {showMenu && (
+              <div className="absolute top-5 right-full mr-2 bg-white border rounded-md shadow-lg z-10 w-40">
+                <button
+                  onClick={() => handleDeleteMessage(message._id!)}
+                  className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Unsend for me
+                </button>
+                {isCurrentUser && (
+                  <button
+                    onClick={handleDeleteForEveryone}
+                    className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-100"
+                  >
+                    Unsend for everyone
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Avatar - left or right depending on sender */}
+        {!isCurrentUser && (
+          <img className="w-10 h-10 rounded-full bg-white shadow-md" src={message.sender?.image} alt="sender avatar" />
+        )}
+
+        <div className="flex flex-col max-w-[70%] relative">
+          <p className="text-gray-400 text-sm">{message.sender?.username}</p>
+
+          <div className={`relative px-5 py-2 rounded-3xl text-gray-900 ${bubbleColor}`}>
             {message.message}
 
-            {message._id && (
+            {/* ❤️ Like button — bottom right */}
+            {typeof message._id === "string" && (
               <svg
-                onClick={() => handleLikeMessage(message._id!)}
+                onClick={() => handleLikeMessage(message._id as string)}
                 xmlns="http://www.w3.org/2000/svg"
                 fill={likedCount > 0 ? "pink" : "none"}
                 viewBox="0 0 24 24"
-                strokeWidth="1.5"
+                strokeWidth={1.5}
                 stroke="currentColor"
-                className={`size-4 cursor-pointer absolute bottom-0 -left-1 ${
+                className={`size-4 cursor-pointer absolute bottom-0 -right-1 ${
                   likedCount > 0 ? "text-pink-400" : "hover:text-pink-400"
                 }`}
               >
@@ -49,10 +123,15 @@ const SingleMessage: React.FC<Props> = ({ message, handleLikeMessage }) => {
           </div>
         </div>
 
-        {isCurrentUser && <img className="w-12 h-12 rounded-full p-0.5 bg-white" src={message.senderImage} alt="" />}
+        {isCurrentUser && (
+          <img className="w-10 h-10 rounded-full bg-white shadow-md" src={message.sender?.image} alt="your avatar" />
+        )}
       </div>
 
-      <p className={`text-xs text-gray-300 ${timeAlign}`}>{message.timestamp}</p>
+      {/* Timestamp */}
+      <div className={`flex items-center gap-2 text-xs text-gray-400 ${textAlign}`}>
+        <span>{new Date(message.timestamp).toISOString().slice(0, 16).replace("T", " ")}</span>
+      </div>
     </div>
   );
 };
