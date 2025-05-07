@@ -178,6 +178,41 @@ const sendMessage = async (req, res) => {
     return res.status(500).json({ error: true, message: "Server error" });
   }
 };
+
+const sendPublicMessage = async (req, res) => {
+  const { sender, message, timestamp } = req.body;
+
+  if (!sender || !message || !timestamp) {
+    return res.status(400).json({ error: true, message: "Missing required fields" });
+  }
+
+  try {
+    const senderUser = await User.findOne({ username: sender.username });
+
+    if (!senderUser) {
+      return res.status(404).json({ error: true, message: "Sender not found" });
+    }
+
+    const newMessage = new Message({
+      sender: senderUser._id,
+      message,
+      timestamp,
+      recipient: null, // This marks it as a public message
+    });
+
+    await newMessage.save();
+    await newMessage.populate("sender", "username image");
+
+    const io = req.app.get("io");
+    io.emit("publicMessage", newMessage); // Broadcast to all sockets
+
+    return res.json({ error: false, message: "Public message sent", data: newMessage });
+  } catch (err) {
+    console.error("❌ Failed to send public message:", err);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+};
+
 const getMessages = async (req, res) => {
   const { sender, recipient } = req.params;
 
@@ -240,7 +275,18 @@ const getConversationById = async (req, res) => {
     res.status(500).json({ error: true, message: "Failed to fetch conversation" });
   }
 };
-const getPublicRoomMessages = (req, res) => res.json({ message: "getPublicRoomMessages not implemented" });
+const getPublicRoomMessages = async (req, res) => {
+  try {
+    const messages = await Message.find({ recipient: null })
+      .sort({ timestamp: 1 })
+      .populate("sender", "username image");
+
+    res.json({ error: false, data: messages });
+  } catch (err) {
+    console.error("❌ Failed to fetch public room messages:", err);
+    res.status(500).json({ error: true, message: "Failed to fetch public messages" });
+  }
+};
 const addUser = (req, res) => res.json({ message: "addUser not implemented" });
 const likeMessagePrivate = (req, res) => res.json({ message: "likeMessagePrivate not implemented" });
 const getNonParticipants = (req, res) => res.json({ message: "getNonParticipants not implemented" });
@@ -262,6 +308,7 @@ module.exports = {
   deleteConversation,
   getConversationById,
   getPublicRoomMessages,
+  sendPublicMessage,
   addUser,
   likeMessagePrivate,
   getNonParticipants,

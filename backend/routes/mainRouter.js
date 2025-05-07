@@ -30,6 +30,7 @@ const {
   getAllUsers,
   getUserByUsername,
   sendMessage,
+  sendPublicMessage,
   getMessages,
   likeMessage,
   deleteAcc,
@@ -67,6 +68,7 @@ Router.get("/conversation/:conversationId", getConversationById);
 Router.get("/conversation/:conversationId/non-participants", getNonParticipants);
 Router.post("/conversation/:conversationId/:username", authMiddle, addUser);
 Router.get("/get-public-room-messages", getPublicRoomMessages);
+Router.post("/send-public-message", authMiddle, sendPublicMessage);
 
 Router.post(
   "/deleteConversation/:conversationId",
