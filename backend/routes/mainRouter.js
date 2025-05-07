@@ -1,6 +1,7 @@
 const express = require("express");
 const Router = express.Router();
 const { Types } = require("mongoose");
+const { addUserToConversation } = require("../controllers/mainController");
 
 // ⛑️ Middleware
 const checkOwnershipOrAdmin = require("../middleware/checkOwnershipOrAdmin");
@@ -103,7 +104,7 @@ Router.get("/get-user/:username", getUserByUsername);
 Router.get("/conversations/:userID", getUserConversations);
 Router.get("/conversation/:conversationId", getConversationById);
 Router.get("/conversation/:conversationId/non-participants", getNonParticipants);
-Router.post("/conversation/:conversationId/:username", auth, addUser);
+Router.post("/add-user-to-conversation", auth, addUserToConversation);
 Router.get("/get-public-room-messages", getPublicRoomMessages);
 Router.post("/send-public-message", auth, sendPublicMessage);
 Router.post("/deleteConversation/:conversationId", auth, deleteConversation);
