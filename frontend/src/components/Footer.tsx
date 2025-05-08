@@ -1,10 +1,16 @@
 import { useLanguage } from "../context/LanguageContext";
 
-const Footer = () => {
+type FooterProps = {
+  className?: string;
+};
+
+const Footer: React.FC<FooterProps> = ({ className = "" }) => {
   const { lang } = useLanguage();
 
   return (
-    <footer className="w-full text-center mt-8 py-4 bg-white/70 backdrop-blur-md shadow-[0_-1px_0_#e5e7eb] text-gray-800 text-sm">
+    <footer
+      className={`w-full text-center py-4 bg-white/70 backdrop-blur-md shadow-[0_-1px_0_#e5e7eb] text-gray-800 text-sm ${className}`}
+    >
       © {new Date().getFullYear()} Arsenijus Valentukevičius.{" "}
       {lang === "lt" ? "Visos teisės saugomos." : "All rights reserved."}
     </footer>

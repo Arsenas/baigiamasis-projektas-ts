@@ -115,7 +115,7 @@ const SingleUserPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+    <div className="flex-grow flex items-center justify-center py-12 px-4 min-h-[calc(100vh-130px)]">
       {/* Profile card */}
       <div className="relative z-10 bg-white max-w-xl w-full rounded-3xl shadow-2xl overflow-hidden">
         {/* 🔲 Wallpaper section */}
