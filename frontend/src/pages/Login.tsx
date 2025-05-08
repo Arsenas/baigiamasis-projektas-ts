@@ -4,11 +4,14 @@ import { useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
 import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "../context/ThemeContext";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Login: React.FC = () => {
   const nav = useNavigate();
   const { lang } = useLanguage();
   const { setCurrentUser, setToken } = mainStore();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const nameRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
@@ -67,16 +70,24 @@ const Login: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">
               {lang === "lt" ? "Slaptažodis" : "Password"}
             </label>
-            <input
-              ref={passRef}
-              type="password"
-              autoComplete="current-password"
-              required
-              className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") login();
-              }}
-            />
+            <div className="relative">
+              <input
+                ref={passRef}
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 pr-10 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") login();
+                }}
+              />
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer text-gray-500"
+              >
+                {showPassword ? <FiEye /> : <FiEyeOff />}
+              </span>
+            </div>
           </div>
 
           {errorMessage && <div className="text-sm text-red-500">{errorMessage}</div>}

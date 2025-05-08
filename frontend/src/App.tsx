@@ -43,18 +43,17 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen relative">
-        {/* 💫 Background Gradient */}
+      <div className="relative min-h-screen flex flex-col">
+        {/* 💫 Background that grows with page height */}
         <div
-          className={`fixed top-0 left-0 w-full h-[100vh] -z-10 
-                      bg-gradient-to-r ${gradientClass}
-                      animate-pulse-gradient bg-[length:200%_200%] blur-[2px]`}
+          className={`absolute top-0 left-0 w-full min-h-full -z-10 
+                    bg-gradient-to-r ${gradientClass}
+                    animate-pulse-gradient bg-[length:200%_200%] blur-[2px]`}
         />
 
         <Toolbar />
 
-        {/* Main content area grows to fill space */}
-        <div className="flex-grow">
+        <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/login" element={<Login />} />
@@ -66,7 +65,7 @@ const App: React.FC = () => {
             <Route path="/chatPage" element={<ChatPage />} />
             <Route path="/admin" element={<AdminPanelWrapper />} />
           </Routes>
-        </div>
+        </main>
 
         <Footer />
       </div>

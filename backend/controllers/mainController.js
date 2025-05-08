@@ -96,7 +96,31 @@ const changeImage = async (req, res) => {
   }
 };
 const changeUsername = (req, res) => res.json({ message: "changeUsername not implemented" });
-const changePassword = (req, res) => res.json({ message: "changePassword not implemented" });
+const changePassword = async (req, res) => {
+  const { userID, password, passwordTwo } = req.body;
+
+  if (!userID || !password || !passwordTwo) {
+    return res.status(400).json({ error: true, message: "Missing required fields" });
+  }
+
+  if (password !== passwordTwo) {
+    return res.status(400).json({ error: true, message: "Passwords do not match" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedUser = await User.findByIdAndUpdate(userID, { password: hashedPassword }, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: true, message: "User not found" });
+    }
+
+    res.json({ error: false, message: "Password changed successfully" });
+  } catch (err) {
+    console.error("❌ Error changing password:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+};
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}, { password: 0 }); // exclude passwords
@@ -341,7 +365,23 @@ const likeMessage = async (req, res) => {
     return res.status(500).json({ error: true, message: "Server error" });
   }
 };
-const deleteAcc = (req, res) => res.json({ message: "deleteAcc not implemented" });
+const deleteAcc = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) return res.status(404).json({ error: true, message: "User not found" });
+
+    await Message.deleteMany({ sender: userId });
+    await Conversation.updateMany({ participants: userId }, { $pull: { participants: userId } });
+    await Conversation.deleteMany({ participants: { $size: 0 } });
+
+    res.json({ error: false, deleted: true, message: "Account and data deleted" });
+  } catch (err) {
+    console.error("❌ Error deleting account:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+};
 const getConversationDetails = (req, res) => res.json({ message: "getConversationDetails not implemented" });
 const deleteConversation = async (req, res) => {
   const userId = req.user?.id;
