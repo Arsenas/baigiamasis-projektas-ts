@@ -1,15 +1,18 @@
 # 🧠 Baigiamasis projektas – Real-Time Chat Platforma
 
-Tai pilnai veikianti realaus laiko pokalbių platforma su galimybe registruotis, bendrauti 
-viešame ir privačiame pokalbių kambaryje, valdyti dalyvius, trinti ir mėgti žinutes, bei turinio valdymu pagal vartotojo 
-rolę. Projektas sukurtas naudojant **React (Create React App)** su **TypeScript**, **Tailwind CSS** stiliui, 
-ir **Node.js/Express + MongoDB** backendui. Duomenų perdavimui realiu laiku naudojamas **Socket.IO**.
+Tai pilnai veikianti realaus laiko pokalbių platforma, leidžianti registruotis, bendrauti viešame ir privačiame pokalbių kambaryje, valdyti dalyvius, trinti ir mėgti žinutes, bei riboti prieigą pagal vartotojo rolę. Projektas sukurtas naudojant **React + TypeScript (frontend)**, **Express + MongoDB (backend)** ir **Socket.IO** realaus laiko funkcionalumui.
+
+---
+
+## 🌐 Gyvai pasiekiama
+
+🔗 https://baigiamasis-projektas-ts.vercel.app
 
 ---
 
 ## 🚀 Paleidimas
 
-### Priekinė dalis (frontend)
+### Frontend
 
 ```bash
 cd frontend
@@ -17,9 +20,9 @@ npm install
 npm start
 ```
 
-Frontend paleidžiamas adresu `http://localhost:3000`
+Veikia lokaliai adresu: [http://localhost:3000](http://localhost:3000)
 
-### Serverio dalis (backend)
+### Backend
 
 ```bash
 cd backend
@@ -27,58 +30,77 @@ npm install
 npm run dev
 ```
 
-Backend naudoja `.env` failą su MongoDB URL ir JWT slaptažodžiu.
+Reikia `.env` failo su šiais kintamaisiais:
+
+```
+MONGO_URL=...
+JWT_SECRET=...
+CLIENT_URL=http://localhost:3000
+PORT=2000
+```
 
 ---
 
-## 📦 Projekto struktūra
+## 📁 Projekto struktūra
 
 ```
 baigiamasis-projektas-ts/
-├── frontend/    # React + Tailwind, vartotojo sąsaja
-└── backend/     # Express + MongoDB + Socket.io
+├── frontend/     # React, Tailwind CSS, Context API
+└── backend/      # Express, Mongoose, Socket.IO
 ```
 
 ---
 
-## ✨ Projekto funkcionalumas
+## ✨ Funkcionalumo santrauka
 
-### Front-End pusė
+### Front-End
 
-- **Visi duomenys atvaizduojami pagal rolę** – matomi pokalbiai, žinutės, dalyviai. Galima matyti tik savo žinutes arba gauti platesnę prieigą, jei prisijungta kaip administratorius.
-- **Registracija ir prisijungimas** – autentifikacija su slaptažodžio šifravimu, validacija ir token'ais.
-- **Vartotojo profilio valdymas** – galima atnaujinti vartotojo informaciją.
-- **Dizainas** – vientisas, mobiliai pritaikytas (responsive), naudojant Tailwind CSS.
-- **Context'ai ir Reducer'iai** – naudojami bent du Context'ai (pvz., autentifikacijos ir socket ryšio), su atitinkamais reducer'iais aplikacijos valdymui.
+- ✅ Vartotojo registracija, prisijungimas, profilio valdymas
+- ✅ Vieši ir privatūs pokalbiai
+- ✅ Žinučių siuntimas, trynimas, mėgimas
+- ✅ Realaus laiko veiksmai per Socket.IO
+- ✅ Rolėmis paremta turinio prieiga (user/admin)
+- ✅ Context API ir useReducer naudojimas (autentifikacija, socket)
+- ✅ Responsyvus dizainas su Tailwind CSS
 
-### Back-End pusė
+### Back-End
 
-- **Duomenų modeliai** – naudojami keli skirtingi duomenų modeliai, tokie kaip vartotojai, pokalbiai, žinutės, dalyviai, rolės.
-- **Duomenų ryšiai** – tarp modelių realizuoti santykiai, pvz., pokalbiai turi dalyvius, žinutės priklauso vartotojams ir pokalbiams.
-- **Autorizacija** – skirtingi vartotojų lygiai (user/admin), su turinio apribojimais – paprasti vartotojai gali keisti tik savo duomenis, o administratoriai – visų.
-- **Middleware logika** – tik vartotojas ar administratorius gali redaguoti ar trinti duomenis.
-- **Realus laikas** – WebSocket ryšys su `socket.io` palaiko tiesioginį žinučių siuntimą, trynimą, mėgimą, dalyvių atnaujinimą.
+- ✅ 5+ duomenų modelių: Vartotojas, Pokalbis, Žinutė, Rolių schema ir kt.
+- ✅ 4+ modelių tarpusavio ryšiai (pvz., žinutės priklauso pokalbiams ir vartotojams)
+- ✅ JWT autentifikacija, bcrypt slaptažodžių šifravimas
+- ✅ Middleware tikrina vartotojo teises (ar yra autorius/admin)
+- ✅ Tik autorius arba admin gali keisti duomenis
+- ✅ API endpoint’ai suskirstyti pagal atsakomybę (autentifikacija, pokalbiai, admin valdymas)
 
 ---
 
 ## 🔧 Naudotos technologijos
 
 ### Front-End
+
 - React (Create React App, TypeScript)
 - Tailwind CSS
 - Context API + useReducer
-- Axios
 - React Router
+- Axios
 
 ### Back-End
+
 - Node.js + Express
 - MongoDB + Mongoose
 - Socket.IO
-- JWT autentifikacija
-- dotenv, bcrypt, middleware logika
+- JSON Web Tokens (JWT)
+- bcrypt
+- dotenv
+- Custom middleware
 
 ---
 
 ## 📝 Pastabos
 
-Projektas kuriamas orientuojantis į aiškų funkcionalumą, paprastą naudotojo patirtį ir lengvą kodo palaikymą. Kodo struktūra segmentuota pagal atsakomybes – frontend'e komponentai ir kontekstai tvarkomi atskirai, backend'e išskirti kontroleriai, middleware ir modeliai. API endpoint'ai dokumentuoti ir nuosekliai pavadinti, todėl projektą galima greitai perprasti tiek naudotojui, tiek vertintojui ar kitam programuotojui.
+Projektas kurtas orientuojantis į aiškų funkcionalumą, realią naudotojo patirtį ir kodų skaidrumą:
+
+- Kodo struktūra suskirstyta pagal atsakomybes (komponentai, context'ai, routeriai, kontroleriai).
+- API keliai pavadinti nuosekliai ir intuityviai.
+- Lengva testuoti, plėsti ar dokumentuoti.
+- Naudotas sąmoningas komponentų suskaidymas ir teisių valdymas.
