@@ -8,6 +8,7 @@ import SingleMessage from "../components/SingleMessage";
 import SuccessComp from "../components/SuccessComp";
 import ErrorComp from "../components/ErrorComp";
 import type { Message, User, Conversation } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 
 const Conversations: React.FC = () => {
   const messageRef = useRef<HTMLInputElement>(null);
@@ -30,6 +31,7 @@ const Conversations: React.FC = () => {
 
   const { conversationId } = useParams<{ conversationId: string }>();
   const nav = useNavigate();
+  const { lang } = useLanguage();
 
   // ------------------ SOCKET SETUP ------------------
   useEffect(() => {
@@ -373,11 +375,11 @@ const Conversations: React.FC = () => {
                     <img className="w-12 h-12 rounded-full object-cover" src={selectedUser.image} alt="" />
                   )}
                   <p className="text-gray-600 font-semibold">
-                    Chat with:{" "}
+                    {lang === "lt" ? "Pokalbis su:" : "Chat with:"}{" "}
                     {(participants ?? [])
                       .filter((p) => p.username !== currentUser.username)
                       .map((p) => p.username)
-                      .join(", ") || "(no one yet)"}
+                      .join(", ") || (lang === "lt" ? "(nėra pasirinkto)" : "(no one yet)")}
                   </p>
                 </div>
                 <svg
@@ -421,7 +423,7 @@ const Conversations: React.FC = () => {
                   onClick={handleLoadEarlier}
                   className="mt-4 bg-indigo-500 hover:bg-indigo-400 text-white p-2 rounded text-sm self-center"
                 >
-                  Load Earlier
+                  {lang === "lt" ? "Įkelti ankstesnes" : "Load Earlier"}
                 </button>
               )}
 
@@ -431,7 +433,7 @@ const Conversations: React.FC = () => {
                   <input
                     ref={messageRef}
                     type="text"
-                    placeholder="Type your message"
+                    placeholder={lang === "lt" ? "Rašykite žinutę..." : "Type your message"}
                     className="bg-gray-50 w-full border border-gray-300 text-sm rounded-lg p-2.5"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -463,7 +465,9 @@ const Conversations: React.FC = () => {
             {/* Add Users Sidebar */}
             {displayUsers && (
               <div className="bg-white/60 backdrop-blur-md border border-white/30 w-[300px] rounded-2xl shadow p-4 overflow-auto flex flex-col gap-2">
-                <p className="text-gray-700 font-semibold mb-2">Add Users to the chat</p>
+                <p className="text-gray-700 font-semibold mb-2">
+                  {lang === "lt" ? "Pridėti vartotojus į pokalbį" : "Add Users to the chat"}
+                </p>
                 {availableUsers?.map((u) => (
                   <div key={u._id} className="flex justify-between items-center border-b pb-2">
                     <span>{u.username}</span>
@@ -485,12 +489,14 @@ const Conversations: React.FC = () => {
           </div>
         ) : (
           <div className="h-[600px] bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl p-6 w-full flex flex-col justify-center items-center">
-            <p className="font-semibold text-gray-600 mb-4">Please Log In to send a message</p>
+            <p className="font-semibold text-gray-600 mb-4">
+              {lang === "lt" ? "Prisijunkite, kad galėtumėte rašyti žinutes" : "Please Log In to send a message"}
+            </p>
             <button
               onClick={() => nav("/login")}
               className="text-white w-[300px] bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm px-5 py-2.5"
             >
-              Login
+              {lang === "lt" ? "Prisijungti" : "Login"}
             </button>
           </div>
         )}

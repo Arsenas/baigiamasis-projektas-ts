@@ -6,6 +6,7 @@ import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
 import Modal from "../components/Modal";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const Profile: React.FC = () => {
   const { currentUser, setCurrentUser, token } = mainStore();
@@ -25,22 +26,30 @@ const Profile: React.FC = () => {
   const [errorMsg4, setErrorMsg4] = useState<string | null>(null);
   const [successMsg3, setSuccessMsg3] = useState<string | null>(null);
   const { theme } = useTheme();
+  const { lang } = useLanguage();
 
   async function updateField(field: string, value: string) {
-    const res = await http.postAuth("/update-user-fields", { [field]: value }, token);
-    if (!res.error && res.updatedUser) {
-      setCurrentUser(res.updatedUser);
-      socket?.emit("profileUpdated", res.updatedUser);
-      setSuccessMsg(`${field} updated successfully.`);
-    } else {
-      setErrorMsg(res.message ?? `Failed to update ${field}`);
+    const res = await http.postAuth("/update-profile", { [field]: value }, token);
+
+    console.log("updateField response:", res); // 👈 pridėta debug
+
+    if (!res || res.error || !res.updatedUser) {
+      setErrorMsg(res?.message ?? "Server error – no response");
+      setTimeout(() => setErrorMsg(null), 3000);
+      return;
     }
+
+    setCurrentUser(res.updatedUser);
+    socket?.emit("profileUpdated", {
+      userId: res.updatedUser._id,
+      image: res.updatedUser.image,
+    });
+    setSuccessMsg(`${field} updated successfully.`);
+
     setTimeout(() => {
       setSuccessMsg(null);
-      setErrorMsg(null);
     }, 3000);
   }
-
   async function checkCurrentPassword(num: number) {
     if (!passRef.current || !currentUser) return;
     const res = await http.postAuth(
@@ -127,7 +136,7 @@ const Profile: React.FC = () => {
               />
               <h2 className="text-xl font-semibold text-gray-800 mt-3">{currentUser?.username}</h2>
               <p className="text-sm text-gray-600 px-6 text-center mt-2">
-                {currentUser?.description || "No description provided."}
+                {currentUser?.description || (lang === "lt" ? "Aprašymas nepateiktas." : "No description provided.")}
               </p>
             </div>
           </div>
@@ -141,31 +150,30 @@ const Profile: React.FC = () => {
                   : "bg-indigo-500 text-white"
               }`}
             >
-              Edit Profile
+              {lang === "lt" ? "Redaguoti profilį" : "Edit Profile"}
             </h2>
 
-            {/* GRID OF FIELDS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field
-                label="Profile Picture URL"
+                label={lang === "lt" ? "Profilio nuotraukos nuoroda" : "Profile Picture URL"}
                 refObj={imageRef}
                 defaultValue={currentUser?.image}
                 onSave={() => updateField("image", imageRef.current?.value || "")}
               />
               <Field
-                label="Username"
+                label={lang === "lt" ? "Vartotojo vardas" : "Username"}
                 refObj={usernameRef}
                 defaultValue={currentUser?.username}
                 onSave={() => updateField("username", usernameRef.current?.value || "")}
               />
               <Field
-                label="Wallpaper Picture URL"
+                label={lang === "lt" ? "Fono paveikslėlio nuoroda" : "Wallpaper Picture URL"}
                 refObj={wallpaperRef}
                 defaultValue={currentUser?.wallpaper}
                 onSave={() => updateField("wallpaper", wallpaperRef.current?.value || "")}
               />
               <Field
-                label="Description"
+                label={lang === "lt" ? "Aprašymas" : "Description"}
                 refObj={descriptionRef}
                 defaultValue={currentUser?.description}
                 onSave={() => updateField("description", descriptionRef.current?.value || "")}
@@ -181,13 +189,13 @@ const Profile: React.FC = () => {
                     : "bg-indigo-600 hover:bg-indigo-500 text-white"
                 } px-6 py-2 rounded-full text-sm font-semibold transition`}
               >
-                Change Password
+                {lang === "lt" ? "Keisti slaptažodį" : "Change Password"}
               </button>
               <button
                 onClick={() => setShowDeleteModal(true)}
                 className="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-semibold"
               >
-                Delete Account
+                {lang === "lt" ? "Ištrinti paskyrą" : "Delete Account"}
               </button>
             </div>
 
@@ -198,30 +206,34 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Password Change Modal */}
-      <Modal isOpen={showPassModal} title="Change Password" onClose={() => setShowPassModal(false)}>
+      <Modal
+        isOpen={showPassModal}
+        title={lang === "lt" ? "Keisti slaptažodį" : "Change Password"}
+        onClose={() => setShowPassModal(false)}
+      >
         <input
           type="password"
           ref={passRef}
-          placeholder="Current Password"
+          placeholder={lang === "lt" ? "Dabartinis slaptažodis" : "Current Password"}
           className="w-full p-2 mb-2 border rounded-lg"
         />
         <input
           type="password"
           ref={newPassRef}
-          placeholder="New Password"
+          placeholder={lang === "lt" ? "Naujas slaptažodis" : "New Password"}
           className="w-full p-2 mb-2 border rounded-lg"
         />
         <input
           type="password"
           ref={newPass2Ref}
-          placeholder="Repeat New Password"
+          placeholder={lang === "lt" ? "Pakartokite naują slaptažodį" : "Repeat New Password"}
           className="w-full p-2 mb-4 border rounded-lg"
         />
         {errorMsg3 && <ErrorComp error={errorMsg3} />}
         {successMsg3 && <SuccessComp msg={successMsg3} />}
         <div className="flex justify-end gap-2">
           <button onClick={() => setShowPassModal(false)} className="bg-gray-300 px-4 py-2 rounded-lg text-sm">
-            Cancel
+            {lang === "lt" ? "Atšaukti" : "Cancel"}
           </button>
           <button
             onClick={() => {
@@ -236,23 +248,27 @@ const Profile: React.FC = () => {
                 : "bg-indigo-600 hover:bg-indigo-500 text-white"
             } px-4 py-2 rounded-lg text-sm font-semibold transition`}
           >
-            Confirm
+            {lang === "lt" ? "Patvirtinti" : "Confirm"}
           </button>
         </div>
       </Modal>
 
       {/* Delete Account Modal */}
-      <Modal isOpen={showDeleteModal} title="Confirm Deletion" onClose={() => setShowDeleteModal(false)}>
+      <Modal
+        isOpen={showDeleteModal}
+        title={lang === "lt" ? "Patvirtinti ištrynimą" : "Confirm Deletion"}
+        onClose={() => setShowDeleteModal(false)}
+      >
         <input
           type="password"
           ref={passRef}
-          placeholder="Enter password to confirm"
+          placeholder={lang === "lt" ? "Įveskite slaptažodį patvirtinimui" : "Enter password to confirm"}
           className="w-full p-2 mb-4 border rounded-lg"
         />
         {errorMsg4 && <ErrorComp error={errorMsg4} />}
         <div className="flex justify-end gap-2">
           <button onClick={() => setShowDeleteModal(false)} className="bg-gray-300 px-4 py-2 rounded-lg text-sm">
-            Cancel
+            {lang === "lt" ? "Atšaukti" : "Cancel"}
           </button>
           <button
             onClick={() => {
@@ -263,7 +279,7 @@ const Profile: React.FC = () => {
             }}
             className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
           >
-            Delete
+            {lang === "lt" ? "Ištrinti" : "Delete"}
           </button>
         </div>
       </Modal>
@@ -282,7 +298,8 @@ const Field = ({
   defaultValue?: string;
   onSave: () => void;
 }) => {
-  const { theme } = useTheme(); // ✅ Hook to access theme
+  const { theme } = useTheme();
+  const { lang } = useLanguage();
 
   return (
     <div>
@@ -297,7 +314,7 @@ const Field = ({
               : "bg-indigo-500 hover:bg-indigo-400 text-white"
           } px-4 py-2 rounded-md text-sm font-semibold transition`}
         >
-          Save
+          {lang === "lt" ? "Išsaugoti" : "Save"}
         </button>
       </div>
     </div>

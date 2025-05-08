@@ -6,6 +6,7 @@ import type { Socket } from "socket.io-client";
 import SingleConversationComp from "../components/SingleConversationComp";
 import { useNavigate } from "react-router-dom";
 import type { User, Conversation } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 
 const AllConversations: React.FC = () => {
   const { currentUser, setConNum } = mainStore();
@@ -14,6 +15,7 @@ const AllConversations: React.FC = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const nav = useNavigate();
+  const { lang } = useLanguage();
 
   useEffect(() => {
     async function fetchUserConversations() {
@@ -62,12 +64,12 @@ const AllConversations: React.FC = () => {
       <div className="flex flex-col w-full absolute top-[70px] items-center">
         <div className="flex flex-col w-full max-w-[1400px] px-[10px] sm:px-[20px] bg-white/90 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-2xl">
           <div className="bg-white/60 backdrop-blur-md border border-white/30 mt-5 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-semibold text-2xl shadow-2xl">
-            <p className="text-gray-600">Your Conversations:</p>
+            <p className="text-gray-600">{lang === "lt" ? "Tavo pokalbiai:" : "Your Conversations:"}</p>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search..."
+              placeholder={lang === "lt" ? "Ieškoti..." : "Search..."}
               className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-72 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
             />
           </div>
@@ -90,7 +92,7 @@ const AllConversations: React.FC = () => {
                 onClick={() => nav(`/login`)}
                 className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
               >
-                Log In to see your conversations
+                {lang === "lt" ? "Prisijunkite, kad matytumėte pokalbius" : "Log In to see your conversations"}
               </button>
             </div>
           )}

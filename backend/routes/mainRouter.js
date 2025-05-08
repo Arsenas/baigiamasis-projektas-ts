@@ -45,9 +45,10 @@ const {
   addUser,
   likeMessagePrivate,
   getNonParticipants,
+  getAllConversations,
 } = require("../controllers/mainController");
 
-const { getAllUsers, deleteUser, changeUserRole } = require("../controllers/adminController");
+const { getAllUsers, deleteUser, changeUserRole, getAllMessages } = require("../controllers/adminController");
 
 // 🔐 Auth Routes
 Router.post("/register", registerUserValidate, register);
@@ -97,6 +98,22 @@ Router.post("/delete-message-for-me/:messageId", auth, async (req, res) => {
   }
 });
 
+// 🔚 DELETE žinutę pagal ID (admin teisėmis)
+Router.delete("/admin/messages/:id", auth, checkRole("admin"), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deleted = await Message.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ error: true, message: "Message not found" });
+    }
+    res.json({ error: false, message: "Message deleted" });
+  } catch (err) {
+    console.error("❌ Failed to delete message:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+});
+
 // 👤 Users
 Router.get("/get-user/:username", getUserByUsername);
 
@@ -113,24 +130,29 @@ Router.post("/deleteConversation/:conversationId", auth, deleteConversation);
 Router.get("/get-all-users", getAllUsers);
 Router.post("/admin/delete-user/:id", auth, deleteUser);
 Router.patch("/admin/change-role/:id", auth, changeUserRole);
+Router.get("/get-all-conversations", auth, checkRole("admin"), getAllConversations);
+Router.delete("/admin/conversations/:conversationId", auth, checkRole("admin"), deleteConversation);
+Router.get("/admin/messages", auth, checkRole("admin"), getAllMessages);
 
 // 📝 Profile update
 Router.post("/update-profile", auth, async (req, res) => {
   try {
+    console.log("🔍 req.user:", req.user);
+    console.log("📝 req.body:", req.body);
     const updated = await User.findByIdAndUpdate(
-      req.user._id,
+      req.user.id,
       {
         $set: {
           username: req.body.username,
           image: req.body.image,
-          wallpaperUrl: req.body.wallpaperUrl,
+          wallpaper: req.body.wallpaper,
           description: req.body.description,
         },
       },
       { new: true }
     );
 
-    res.status(200).json(updated);
+    res.status(200).json({ updatedUser: updated });
   } catch (err) {
     console.error("❌ Failed to update profile:", err);
     res.status(500).json({ error: "Server error" });

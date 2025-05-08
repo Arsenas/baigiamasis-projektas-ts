@@ -7,6 +7,7 @@ import type { Socket } from "socket.io-client";
 import ErrorComp from "../components/ErrorComp";
 import SuccessComp from "../components/SuccessComp";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 interface User {
   _id: string;
@@ -25,6 +26,7 @@ const SingleUserPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
+  const { lang } = useLanguage();
 
   const nav = useNavigate();
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
@@ -113,75 +115,84 @@ const SingleUserPage: React.FC = () => {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center py-12 px-4 bg-cover bg-center relative"
-      style={{
-        backgroundImage: `url(${user?.wallpaperUrl || "/default-wallpaper.jpg"})`,
-      }}
-    >
-      {/* Overlay blur for readability */}
-      <div className="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-0" />
-
+    <div className="min-h-screen flex items-center justify-center py-12 px-4">
       {/* Profile card */}
-      <div className="relative z-10 bg-white max-w-xl w-full p-8 rounded-3xl shadow-2xl flex flex-col items-center">
-        <img src={user?.image} className="rounded-full h-40 w-40 shadow-md p-1 bg-white mb-4" alt="Profile" />
-        <h1 className="text-3xl font-bold text-gray-800 mb-1">{user?.username}</h1>
+      <div className="relative z-10 bg-white max-w-xl w-full rounded-3xl shadow-2xl overflow-hidden">
+        {/* 🔲 Wallpaper section */}
+        <div
+          className="h-32 sm:h-48 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${user?.wallpaper || "/default-wallpaper.jpg"})`,
+          }}
+        />
 
-        <p className="text-sm text-gray-500 mb-6 italic text-center px-4">
-          {user?.description?.trim() ? user.description : "This user hasn’t written a description yet."}
-        </p>
+        {/* 🔵 Profile content */}
+        <div className="p-8 pt-0 flex flex-col items-center">
+          <img src={user?.image} className="rounded-full h-40 w-40 shadow-md p-1 bg-white -mt-20" alt="Profile" />
+          <h1 className="text-3xl font-bold text-gray-800 mt-2">{user?.username}</h1>
 
-        {currentUser?._id === user?._id && (
-          <p className="text-xs text-indigo-600 mb-4 font-medium">This is your profile</p>
-        )}
+          <p className="text-sm text-gray-500 mb-6 italic text-center px-4">
+            {user?.description?.trim()
+              ? user.description
+              : lang === "lt"
+              ? "Šis naudotojas dar neparašė aprašymo."
+              : "This user hasn’t written a description yet."}
+          </p>
 
-        {currentUser ? (
-          <div className="w-full flex flex-col gap-3">
-            <label htmlFor="message" className="block text-sm font-medium text-gray-900 text-start">
-              Your message
-            </label>
-            <textarea
-              id="message"
-              rows={4}
-              ref={messageRef}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300"
-              placeholder="Write your thoughts here..."
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-            ></textarea>
+          {currentUser?._id === user?._id && (
+            <p className="text-xs text-indigo-600 mb-4 font-medium">
+              {lang === "lt" ? "Tai yra jūsų profilis" : "This is your profile"}
+            </p>
+          )}
 
+          {currentUser ? (
+            <div className="w-full flex flex-col gap-3">
+              <label htmlFor="message" className="block text-sm font-medium text-gray-900 text-start">
+                {lang === "lt" ? "Tavo žinutė:" : "Your message:"}
+              </label>
+              <textarea
+                id="message"
+                rows={4}
+                ref={messageRef}
+                className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300"
+                placeholder={lang === "lt" ? "Parašyk čia savo mintis..." : "Write your thoughts here..."}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+              ></textarea>
+
+              <button
+                type="button"
+                onClick={sendMessage}
+                className={`mt-5 text-sm px-5 py-2.5 rounded-full font-medium transition ${
+                  theme === "dark"
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                }`}
+              >
+                {lang === "lt" ? "Siųsti žinutę" : "Send Message"}
+              </button>
+
+              {error && <ErrorComp error={error} />}
+              {successMessage && <SuccessComp msg={successMessage} />}
+            </div>
+          ) : (
             <button
               type="button"
               onClick={() => nav("/login")}
-              className={`mt-5 text-sm px-5 py-2.5 rounded-full font-medium transition ${
+              className={`text-sm px-5 py-2.5 rounded-full font-medium transition ${
                 theme === "dark"
                   ? "bg-gray-700 hover:bg-gray-600 text-white"
                   : "bg-indigo-600 hover:bg-indigo-500 text-white"
               }`}
             >
-              Send Message
+              {lang === "lt" ? "Prisijunkite, kad galėtumėte rašyti" : "Login to send a message"}
             </button>
-
-            {error && <ErrorComp error={error} />}
-            {successMessage && <SuccessComp msg={successMessage} />}
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => nav("/login")}
-            className={`text-sm px-5 py-2.5 rounded-full font-medium transition ${
-              theme === "dark"
-                ? "bg-gray-700 hover:bg-gray-600 text-white"
-                : "bg-indigo-600 hover:bg-indigo-500 text-white"
-            }`}
-          >
-            Login to send a message
-          </button>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

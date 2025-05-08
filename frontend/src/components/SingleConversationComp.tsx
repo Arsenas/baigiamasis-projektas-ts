@@ -5,6 +5,7 @@ import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import type { Conversation, User } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Props {
   conversation: Conversation;
@@ -14,6 +15,7 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
   const { token, currentUser } = mainStore();
   const nav = useNavigate();
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
+  const { lang } = useLanguage();
 
   // 🧠 Filter out yourself to get the other chat partner(s)
   const otherParticipants = conversation.participants.filter((p) => p._id !== currentUser?._id);
@@ -136,7 +138,9 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
       {/* Text */}
       <div className="flex flex-col justify-center text-start w-full">
         <div onClick={() => nav(`/conversation/${conversation._id}`)} className="cursor-pointer hover:text-gray-500">
-          <p className="text-gray-700 font-semibold text-[16px]">Conversation with:</p>
+          <p className="text-gray-700 font-semibold text-[16px]">
+            {lang === "lt" ? "Pokalbis su:" : "Conversation with:"}
+          </p>
           <div className="flex flex-wrap gap-1 text-[15px] text-gray-800 font-semibold">
             {otherParticipants.map((participant, i, arr) => (
               <span key={i}>
@@ -146,7 +150,9 @@ const SingleConversationComp: React.FC<Props> = ({ conversation }) => {
             ))}
           </div>
         </div>
-        <p className="text-xs text-gray-400 mt-1">Last updated: {formatDate(conversation.updatedAt)}</p>
+        <p className="text-xs text-gray-400 mt-1">
+          {lang === "lt" ? "Atnaujinta:" : "Last updated:"} {formatDate(conversation.updatedAt)}
+        </p>
       </div>
     </div>
   );
