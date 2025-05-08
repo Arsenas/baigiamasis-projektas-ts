@@ -115,6 +115,7 @@ const AdminPanel: React.FC = () => {
           </div>
         </div>
 
+        {/* Users View */}
         {view === "users" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {users.map((u) => (
@@ -162,6 +163,7 @@ const AdminPanel: React.FC = () => {
           </div>
         )}
 
+        {/* Conversations View */}
         {view === "conversations" && (
           <div className="space-y-4">
             {conversations.map((c) => (
@@ -197,26 +199,59 @@ const AdminPanel: React.FC = () => {
           </div>
         )}
 
+        {/* Messages View */}
         {view === "messages" && (
           <div className="space-y-4">
-            {messages.map((msg) => (
-              <div key={msg._id} className="bg-gray-100 p-4 rounded-xl shadow-sm">
-                <p>
-                  <strong>{lang === "lt" ? "Siuntėjas" : "Sender"}:</strong> {msg.sender?.username}
-                </p>
-                <p>
-                  <strong>{lang === "lt" ? "Žinutė" : "Message"}:</strong> {msg.message}
-                </p>
-                <p>
-                  <strong>{lang === "lt" ? "Pokalbis" : "Conversation"}:</strong>{" "}
-                  {msg.conversation ? msg.conversation._id : "Public"}
-                </p>
-                {(() => {
-                  const createdAt = msg.createdAt || new Date(parseInt(msg._id.toString().substring(0, 8), 16) * 1000);
-                  return <p className="text-sm text-gray-500">{new Date(createdAt).toLocaleString()}</p>;
-                })()}
-              </div>
-            ))}
+            {messages.map((msg) => {
+              const createdAt = msg.createdAt || new Date(parseInt(msg._id.toString().substring(0, 8), 16) * 1000);
+              return (
+                <div
+                  key={msg._id}
+                  className="bg-gray-100 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4"
+                >
+                  {/* Kairė pusė – žinutės informacija */}
+                  <div>
+                    <p>
+                      <strong>{lang === "lt" ? "Siuntėjas" : "Sender"}:</strong> {msg.sender?.username}
+                    </p>
+                    <p>
+                      <strong>{lang === "lt" ? "Žinutė" : "Message"}:</strong> {msg.message}
+                    </p>
+                    <p>
+                      <strong>{lang === "lt" ? "Pokalbis" : "Conversation"}:</strong>{" "}
+                      {msg.conversation ? msg.conversation._id : "Public"}
+                    </p>
+                    <p className="text-sm text-gray-500">{new Date(createdAt).toLocaleString()}</p>
+                  </div>
+
+                  {/* Dešinė pusė – mygtukas */}
+                  <div className="ml-auto">
+                    <button
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            lang === "lt"
+                              ? "Ar tikrai nori ištrinti šią žinutę?"
+                              : "Are you sure you want to delete this message?"
+                          )
+                        ) {
+                          http.delete(`/admin/messages/${msg._id}`, token).then((res) => {
+                            if (!res.error) {
+                              setMessages((prev) => prev.filter((m) => m._id !== msg._id));
+                            } else {
+                              alert(res.message || "Failed to delete.");
+                            }
+                          });
+                        }
+                      }}
+                      className="bg-red-100 text-red-700 text-sm px-4 py-1 rounded hover:bg-red-200 transition"
+                    >
+                      {lang === "lt" ? "Ištrinti žinutę" : "Delete Message"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

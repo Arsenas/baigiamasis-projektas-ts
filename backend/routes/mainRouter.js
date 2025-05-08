@@ -98,6 +98,22 @@ Router.post("/delete-message-for-me/:messageId", auth, async (req, res) => {
   }
 });
 
+// 🔚 DELETE žinutę pagal ID (admin teisėmis)
+Router.delete("/admin/messages/:id", auth, checkRole("admin"), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deleted = await Message.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ error: true, message: "Message not found" });
+    }
+    res.json({ error: false, message: "Message deleted" });
+  } catch (err) {
+    console.error("❌ Failed to delete message:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+});
+
 // 👤 Users
 Router.get("/get-user/:username", getUserByUsername);
 
