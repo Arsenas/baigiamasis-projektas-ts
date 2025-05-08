@@ -27,20 +27,27 @@ const Profile: React.FC = () => {
   const { theme } = useTheme();
 
   async function updateField(field: string, value: string) {
-    const res = await http.postAuth("/update-user-fields", { [field]: value }, token);
-    if (!res.error && res.updatedUser) {
-      setCurrentUser(res.updatedUser);
-      socket?.emit("profileUpdated", res.updatedUser);
-      setSuccessMsg(`${field} updated successfully.`);
-    } else {
-      setErrorMsg(res.message ?? `Failed to update ${field}`);
+    const res = await http.postAuth("/update-profile", { [field]: value }, token);
+
+    console.log("updateField response:", res); // 👈 pridėta debug
+
+    if (!res || res.error || !res.updatedUser) {
+      setErrorMsg(res?.message ?? "Server error – no response");
+      setTimeout(() => setErrorMsg(null), 3000);
+      return;
     }
+
+    setCurrentUser(res.updatedUser);
+    socket?.emit("profileUpdated", {
+      userId: res.updatedUser._id,
+      image: res.updatedUser.image,
+    });
+    setSuccessMsg(`${field} updated successfully.`);
+
     setTimeout(() => {
       setSuccessMsg(null);
-      setErrorMsg(null);
     }, 3000);
   }
-
   async function checkCurrentPassword(num: number) {
     if (!passRef.current || !currentUser) return;
     const res = await http.postAuth(

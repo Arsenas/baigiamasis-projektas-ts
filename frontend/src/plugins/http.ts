@@ -11,7 +11,6 @@ export interface PostAuthResponse {
 }
 
 //Post funkcija
-
 async function postAuth<T = PostAuthResponse>(endpoint: string, data: any, token?: string): Promise<T> {
   try {
     const res = await fetch(baseUrl + endpoint, {
@@ -23,13 +22,18 @@ async function postAuth<T = PostAuthResponse>(endpoint: string, data: any, token
       body: JSON.stringify(data),
     });
 
-    const result = await res.json();
+    let result: any = null;
 
-    if (!res.ok) {
-      console.error("❌ Backend responded with error status:", res.status);
+    try {
+      result = await res.json(); // 👈 pabandome parse'inti JSON saugiai
+    } catch (e) {
+      console.error("❌ Failed to parse JSON response");
+    }
+
+    if (!res.ok || !result) {
       return {
         error: true,
-        message: result.message || "Server responded with an error",
+        message: result?.message || `Server error (status ${res.status})`,
       } as T;
     }
 

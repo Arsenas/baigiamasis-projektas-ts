@@ -117,8 +117,10 @@ Router.patch("/admin/change-role/:id", auth, changeUserRole);
 // 📝 Profile update
 Router.post("/update-profile", auth, async (req, res) => {
   try {
+    console.log("🔍 req.user:", req.user);
+    console.log("📝 req.body:", req.body);
     const updated = await User.findByIdAndUpdate(
-      req.user._id,
+      req.user.id,
       {
         $set: {
           username: req.body.username,
@@ -130,7 +132,7 @@ Router.post("/update-profile", auth, async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json(updated);
+    res.status(200).json({ updatedUser: updated });
   } catch (err) {
     console.error("❌ Failed to update profile:", err);
     res.status(500).json({ error: "Server error" });
