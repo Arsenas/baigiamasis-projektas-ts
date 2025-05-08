@@ -341,7 +341,29 @@ const likeMessage = async (req, res) => {
     return res.status(500).json({ error: true, message: "Server error" });
   }
 };
-const deleteAcc = (req, res) => res.json({ message: "deleteAcc not implemented" });
+const deleteAcc = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Patikrink ar egzistuoja
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: true, message: "User not found" });
+    }
+
+    // 🔐 Ištrink susijusias žinutes
+    await Message.deleteMany({ sender: userId });
+    await Message.deleteMany({ recipient: userId });
+
+    // 🔐 Ištrink naudotoją
+    await User.findByIdAndDelete(userId);
+
+    res.json({ error: false, message: "Account and messages deleted" });
+  } catch (err) {
+    console.error("❌ Error deleting account:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+};
 const getConversationDetails = (req, res) => res.json({ message: "getConversationDetails not implemented" });
 const deleteConversation = async (req, res) => {
   const userId = req.user?.id;
