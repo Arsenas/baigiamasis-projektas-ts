@@ -360,14 +360,13 @@ const Conversations: React.FC = () => {
     }
   };
 
-  // ------------------ RENDER ------------------
   return (
-    <div className="flex flex-col items-center w-full mt-[70px] px-[10px] sm:px-[20px]">
-      <div className="w-full max-w-[1400px] flex flex-col gap-6 bg-white/90 backdrop-blur-md border border-white/50 shadow-2xl rounded-2xl p-6">
+    <div className="flex-grow flex flex-col justify-between items-center w-full min-h-[calc(100vh-130px)] px-[10px] sm:px-[20px] pt-[70px]">
+      <div className="w-full max-w-[1400px] min-h-[700px] bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-6">
         {currentUser ? (
-          <div className="w-full flex flex-col xl:flex-row gap-6">
+          <div className="w-full min-h-[500px] flex flex-col xl:flex-row gap-6">
             {/* Chat Box */}
-            <div className="flex flex-col w-full bg-white/60 backdrop-blur-md border border-white/30 p-4 rounded-2xl">
+            <div className="flex flex-col w-full min-h-[600px] bg-white/60 backdrop-blur-md border border-white/30 p-4 rounded-2xl">
               {/* Header */}
               <div className="flex items-center justify-between bg-white/50 backdrop-blur-sm border border-white/20 p-3 rounded-xl mb-4">
                 <div className="flex items-center gap-3">
@@ -399,7 +398,7 @@ const Conversations: React.FC = () => {
               <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex flex-col min-h-[520px] max-h-[550px] p-3 overflow-auto bg-white/60 backdrop-blur-md border border-white/30 rounded-xl shadow-inner"
+                className="flex flex-col flex-grow p-3 overflow-auto bg-white/60 backdrop-blur-md border border-white/30 rounded-xl shadow-inner"
               >
                 {messages.map((msg) => (
                   <SingleMessage
@@ -417,17 +416,7 @@ const Conversations: React.FC = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Load Earlier */}
-              {showButton && (
-                <button
-                  onClick={handleLoadEarlier}
-                  className="mt-4 bg-indigo-500 hover:bg-indigo-400 text-white p-2 rounded text-sm self-center"
-                >
-                  {lang === "lt" ? "Įkelti ankstesnes" : "Load Earlier"}
-                </button>
-              )}
-
-              {/* Input */}
+              {/* Input at bottom */}
               {selectedUser && (
                 <div className="flex mt-4 p-3 bg-white/50 backdrop-blur-sm border border-white/20 rounded-xl items-center gap-2">
                   <input

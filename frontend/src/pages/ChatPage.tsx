@@ -159,81 +159,79 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full mt-[70px] px-[10px] sm:px-[20px]">
-      <div className="w-full max-w-[1400px] bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl shadow-2xl p-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xl font-semibold text-gray-700">
-              {lang === "lt" ? "Viešas pokalbių kambarys" : "Chat Room"}
-            </p>
-          </div>
-
-          {currentUser ? (
-            <>
-              <div
-                ref={containerRef}
-                className="flex flex-col min-h-[550px] max-h-[500px] p-3 overflow-auto bg-gray-50 rounded-xl"
-                onScroll={handleScroll}
-              >
-                {messages.map((message, i) => (
-                  <SingleMessage
-                    key={i}
-                    message={message}
-                    handleLikeMessage={handleLikeMessage}
-                    handleDeleteMessage={handleDeleteMessage}
-                    socket={socket}
-                    removeMessage={removeMessage}
-                  />
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-
-              <div className="flex p-3 mt-4 bg-white/60 backdrop-blur-md border border-white/30 rounded-xl">
-                <div className="w-full flex gap-2 items-center text-gray-500">
-                  <input
-                    ref={messageRef}
-                    type="text"
-                    placeholder={lang === "lt" ? "Rašykite žinutę" : "Type your message"}
-                    className="bg-gray-50 w-full border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        sendMessage();
-                      }
-                    }}
-                  />
-                  <svg
-                    onClick={sendMessage}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-6 cursor-pointer hover:text-gray-800"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="h-[600px] bg-white p-3 w-full flex flex-col justify-end items-center">
-              <p className="font-semibold text-gray-600">
-                {lang === "lt" ? "Prisijunkite, kad galėtumėte rašyti žinutes" : "Please Log In to send a message"}
-              </p>
-              <button
-                onClick={() => nav("/login")}
-                className="text-white w-[300px] mt-5 bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm px-5 py-2.5"
-              >
-                {lang === "lt" ? "Prisijungti" : "Login"}
-              </button>
-            </div>
-          )}
+    <div className="w-full flex justify-center px-[10px] sm:px-[20px] pt-[70px]">
+      <div className="w-full max-w-[1400px] bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-xl font-semibold text-gray-700">
+            {lang === "lt" ? "Viešas pokalbių kambarys" : "Chat Room"}
+          </p>
         </div>
+
+        {currentUser ? (
+          <>
+            <div
+              ref={containerRef}
+              className="flex flex-col min-h-[300px] max-h-[500px] p-3 overflow-auto bg-gray-50 rounded-xl"
+              onScroll={handleScroll}
+            >
+              {messages.map((message, i) => (
+                <SingleMessage
+                  key={i}
+                  message={message}
+                  handleLikeMessage={handleLikeMessage}
+                  handleDeleteMessage={handleDeleteMessage}
+                  socket={socket}
+                  removeMessage={removeMessage}
+                />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="flex p-3 mt-4 bg-white/60 backdrop-blur-md border border-white/30 rounded-xl">
+              <div className="w-full flex gap-2 items-center text-gray-500">
+                <input
+                  ref={messageRef}
+                  type="text"
+                  placeholder={lang === "lt" ? "Rašykite žinutę" : "Type your message"}
+                  className="bg-gray-50 w-full border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                />
+                <svg
+                  onClick={sendMessage}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-6 cursor-pointer hover:text-gray-800"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                  />
+                </svg>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="h-[600px] bg-white p-3 w-full flex flex-col justify-end items-center">
+            <p className="font-semibold text-gray-600">
+              {lang === "lt" ? "Prisijunkite, kad galėtumėte rašyti žinutes" : "Please Log In to send a message"}
+            </p>
+            <button
+              onClick={() => nav("/login")}
+              className="text-white w-[300px] mt-5 bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm px-5 py-2.5"
+            >
+              {lang === "lt" ? "Prisijungti" : "Login"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,18 +1,14 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// 🧠 Global socket and state store
 import socket from "./socket";
 import mainStore from "./store/mainStore";
 
-// Kontekstai
 import { useTheme } from "./context/ThemeContext";
 
-// Komponentai
 import Toolbar from "./components/Toolbar";
-import Footer from "./components/Footer"; // ✅ Import global footer
+import Footer from "./components/Footer";
 
-// Puslapiai
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Homepage from "./pages/Homepage";
@@ -44,15 +40,17 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <div className="relative min-h-screen flex flex-col">
-        {/* 💫 Background that grows with page height */}
+        {/* 💫 Fonas */}
         <div
           className={`absolute top-0 left-0 w-full min-h-full -z-10 
-                    bg-gradient-to-r ${gradientClass}
-                    animate-pulse-gradient bg-[length:200%_200%] blur-[2px]`}
+                      bg-gradient-to-r ${gradientClass}
+                      animate-pulse-gradient bg-[length:200%_200%] blur-[2px]`}
         />
 
+        {/* 🔝 Viršutinė juosta */}
         <Toolbar />
 
+        {/* 🌐 Turinys su scroll'u */}
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Homepage />} />
@@ -67,7 +65,8 @@ const App: React.FC = () => {
           </Routes>
         </main>
 
-        <Footer />
+        {/* 🔚 Apačia */}
+        <Footer className="mt-auto" />
       </div>
     </BrowserRouter>
   );
