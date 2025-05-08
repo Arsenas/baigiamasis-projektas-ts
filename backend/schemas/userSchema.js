@@ -16,10 +16,19 @@ const userSchema = new Schema({
     required: true,
     default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
   },
+  wallpaper: {
+    type: String,
+    default: "",
+  },
+
   role: {
     type: String,
     enum: ["user", "admin"],
     default: "user",
+  },
+  description: {
+    type: String,
+    default: "",
   },
 });
 

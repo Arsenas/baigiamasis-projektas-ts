@@ -125,7 +125,7 @@ Router.post("/update-profile", auth, async (req, res) => {
         $set: {
           username: req.body.username,
           image: req.body.image,
-          wallpaperUrl: req.body.wallpaperUrl,
+          wallpaper: req.body.wallpaper,
           description: req.body.description,
         },
       },
