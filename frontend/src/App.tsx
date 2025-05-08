@@ -42,8 +42,8 @@ const App: React.FC = () => {
     theme === "dark" ? "from-gray-900 via-gray-800 to-black" : "from-indigo-700 via-fuchsia-600 to-rose-600";
 
   return (
-    <div className="flex flex-col min-h-screen relative">
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="flex flex-col min-h-screen relative">
         {/* 💫 Background Gradient */}
         <div
           className={`fixed top-0 left-0 w-full h-[100vh] -z-10 
@@ -69,8 +69,8 @@ const App: React.FC = () => {
         </div>
 
         <Footer />
-      </BrowserRouter>
-    </div>
+      </div>
+    </BrowserRouter>
   );
 };
 
