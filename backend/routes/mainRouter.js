@@ -48,7 +48,7 @@ const {
   getAllConversations,
 } = require("../controllers/mainController");
 
-const { getAllUsers, deleteUser, changeUserRole } = require("../controllers/adminController");
+const { getAllUsers, deleteUser, changeUserRole, getAllMessages } = require("../controllers/adminController");
 
 // 🔐 Auth Routes
 Router.post("/register", registerUserValidate, register);
@@ -115,6 +115,8 @@ Router.get("/get-all-users", getAllUsers);
 Router.post("/admin/delete-user/:id", auth, deleteUser);
 Router.patch("/admin/change-role/:id", auth, changeUserRole);
 Router.get("/get-all-conversations", auth, checkRole("admin"), getAllConversations);
+Router.delete("/admin/conversations/:conversationId", auth, checkRole("admin"), deleteConversation);
+Router.get("/admin/messages", auth, checkRole("admin"), getAllMessages);
 
 // 📝 Profile update
 Router.post("/update-profile", auth, async (req, res) => {

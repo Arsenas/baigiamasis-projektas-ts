@@ -39,7 +39,7 @@ const SingleMessage: React.FC<Props> = ({
   const handleDeleteForEveryone = async () => {
     try {
       // Call backend API to delete the message permanently
-      await http.deleteAuth(`/permanent-delete-message/${message._id}`, token);
+      await http.delete(`/permanent-delete-message/${message._id}`, token);
 
       // Emit the event for the socket connection
       socket?.emit("messagePermanentlyDeleted", { messageId: message._id });

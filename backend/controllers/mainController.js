@@ -350,21 +350,23 @@ const deleteConversation = async (req, res) => {
   if (!userId) return res.status(401).json({ error: true, message: "Unauthorized" });
 
   try {
-    const conversation = await Conversation.findById(conversationId);
+    const user = await User.findById(userId);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ error: true, message: "Forbidden – Admins only" });
+    }
 
-    if (!conversation) {
+    const deleted = await Conversation.findByIdAndDelete(conversationId);
+    if (!deleted) {
       return res.status(404).json({ error: true, message: "Conversation not found" });
     }
 
-    if (!conversation.hiddenFor.includes(userId)) {
-      conversation.hiddenFor.push(userId);
-      await conversation.save();
-    }
+    // Optionally, delete all related messages:
+    await Message.deleteMany({ conversationId });
 
     const io = req.app.get("io");
-    io.emit("conversationDeleted");
+    io.emit("conversationDeleted", { conversationId });
 
-    return res.json({ error: false, message: "Conversation deleted for current user" });
+    return res.json({ error: false, message: "Conversation permanently deleted" });
   } catch (err) {
     console.error("❌ Failed to delete conversation:", err);
     return res.status(500).json({ error: true, message: "Server error" });
@@ -479,5 +481,5 @@ module.exports = {
   deleteMessagePermanent,
   likeMessagePrivate,
   getNonParticipants,
-  getAllConversations
+  getAllConversations,
 };

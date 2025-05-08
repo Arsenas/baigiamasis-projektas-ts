@@ -49,4 +49,20 @@ const changeUserRole = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, deleteUser, changeUserRole };
+const Message = require("../schemas/messageSchema");
+
+const getAllMessages = async (req, res) => {
+  try {
+    const messages = await Message.find()
+      .populate("sender", "username")
+      .populate("conversation", "_id")
+      .sort({ createdAt: -1 });
+
+    res.json({ error: false, data: messages });
+  } catch (err) {
+    console.error("❌ Failed to fetch messages:", err);
+    res.status(500).json({ error: true, message: "Failed to fetch messages" });
+  }
+};
+
+module.exports = { getAllUsers, deleteUser, changeUserRole, getAllMessages };

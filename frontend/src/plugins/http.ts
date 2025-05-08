@@ -10,7 +10,13 @@ export interface PostAuthResponse {
   data?: any;
 }
 
-//Post funkcija
+export type ApiResponse<T = any> = {
+  error?: boolean;
+  message?: string;
+  data?: T;
+};
+
+// POST
 async function postAuth<T = PostAuthResponse>(endpoint: string, data: any, token?: string): Promise<T> {
   try {
     const res = await fetch(baseUrl + endpoint, {
@@ -22,13 +28,7 @@ async function postAuth<T = PostAuthResponse>(endpoint: string, data: any, token
       body: JSON.stringify(data),
     });
 
-    let result: any = null;
-
-    try {
-      result = await res.json(); // 👈 pabandome parse'inti JSON saugiai
-    } catch (e) {
-      console.error("❌ Failed to parse JSON response");
-    }
+    const result = await safeJson(res);
 
     if (!res.ok || !result) {
       return {
@@ -40,14 +40,12 @@ async function postAuth<T = PostAuthResponse>(endpoint: string, data: any, token
     return result as T;
   } catch (error) {
     console.error("HTTP POST error:", error);
-    return {
-      error: true,
-      message: "Network error",
-    } as T;
+    return { error: true, message: "Network error" } as T;
   }
 }
 
-async function get(endpoint: string, token?: string): Promise<PostAuthResponse> {
+// GET
+async function get<T = PostAuthResponse>(endpoint: string, token?: string): Promise<T> {
   try {
     const res = await fetch(baseUrl + endpoint, {
       method: "GET",
@@ -60,11 +58,12 @@ async function get(endpoint: string, token?: string): Promise<PostAuthResponse> 
     return await res.json();
   } catch (error) {
     console.error("HTTP GET error:", error);
-    return { error: true, message: "Network error" };
+    return { error: true, message: "Network error" } as T;
   }
 }
 
-export async function deleteAuth(endpoint: string, token?: string) {
+// DELETE
+async function del<T = PostAuthResponse>(endpoint: string, token?: string): Promise<T> {
   try {
     const res = await fetch(baseUrl + endpoint, {
       method: "DELETE",
@@ -73,15 +72,34 @@ export async function deleteAuth(endpoint: string, token?: string) {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
     });
+
     if (!res.ok) {
       const err = await res.json();
-      return { error: true, message: err.message || `Status ${res.status}` };
+      return {
+        error: true,
+        message: err.message || `Status ${res.status}`,
+      } as T;
     }
+
     return await res.json();
   } catch (e) {
     console.error("HTTP DELETE error:", e);
-    return { error: true, message: "Network error" };
+    return { error: true, message: "Network error" } as T;
   }
 }
 
-export default { postAuth, get, deleteAuth };
+// 👇 saugus JSON parse
+async function safeJson(res: Response) {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export default {
+  postAuth,
+  get,
+  del,
+  delete: del, // 👈 leidžia naudoti http.delete(...) be TypeScript klaidos
+};
