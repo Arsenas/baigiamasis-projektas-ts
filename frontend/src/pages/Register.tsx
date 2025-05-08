@@ -109,12 +109,16 @@ const Register: React.FC = () => {
     <div className="relative min-h-[calc(100vh-64px-90px)] flex justify-center items-center px-4 py-8">
       {/* 🧾 White card container */}
       <div className="w-full max-w-xl bg-white/85 backdrop-blur-md border border-white/30 rounded-2xl shadow-xl mx-4 sm:mx-auto px-8 py-10">
-        <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">Create an account</h2>
+        <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
+          {lang === "lt" ? "Sukurti paskyrą" : "Create an account"}
+        </h2>
 
         <div className="space-y-6">
           {/* Username input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Username</label>
+            <label className="block text-sm font-medium text-gray-700">
+              {lang === "lt" ? "Vartotojo vardas" : "Username"}
+            </label>
             <input
               ref={nameRef}
               type="text"
@@ -129,7 +133,9 @@ const Register: React.FC = () => {
 
           {/* Password input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <label className="block text-sm font-medium text-gray-700">
+              {lang === "lt" ? "Slaptažodis" : "Password"}
+            </label>
             <input
               ref={passRef}
               type="password"
@@ -144,7 +150,9 @@ const Register: React.FC = () => {
 
           {/* Repeat password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Repeat password</label>
+            <label className="block text-sm font-medium text-gray-700">
+              {lang === "lt" ? "Pakartokite slaptažodį" : "Repeat password"}
+            </label>
             <input
               ref={pass2Ref}
               type="password"
@@ -170,12 +178,12 @@ const Register: React.FC = () => {
                 : "bg-indigo-600 text-white hover:bg-indigo-500"
             }`}
           >
-            Sign up
+            {lang === "lt" ? "Registruotis" : "Sign up"}
           </button>
 
           {/* Login redirect */}
           <p className="mt-6 text-center text-sm text-gray-500">
-            Already a member?{" "}
+            {lang === "lt" ? "Jau turite paskyrą?" : "Already a member?"}{" "}
             <span
               onClick={() => nav("/login")}
               className={`font-semibold cursor-pointer transition ${

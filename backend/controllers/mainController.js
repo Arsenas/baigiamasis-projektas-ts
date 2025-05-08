@@ -439,6 +439,23 @@ const addUserToConversation = async (req, res) => {
 const likeMessagePrivate = (req, res) => res.json({ message: "likeMessagePrivate not implemented" });
 const getNonParticipants = (req, res) => res.json({ message: "getNonParticipants not implemented" });
 
+const getAllConversations = async (req, res) => {
+  try {
+    const conversations = await Conversation.find()
+      .populate("participants", "username image")
+      .populate({
+        path: "messages",
+        options: { sort: { timestamp: 1 } },
+        populate: { path: "sender", select: "username image" },
+      });
+
+    res.json({ error: false, data: conversations });
+  } catch (err) {
+    console.error("❌ Failed to get all conversations:", err);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -462,4 +479,5 @@ module.exports = {
   deleteMessagePermanent,
   likeMessagePrivate,
   getNonParticipants,
+  getAllConversations
 };

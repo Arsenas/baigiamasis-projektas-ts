@@ -5,6 +5,7 @@ import mainStore from "../store/mainStore";
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import SingleUserCard from "../components/SingleUserCard";
+import { useLanguage } from "../context/LanguageContext";
 
 // User tipo apibrėžimas
 interface User {
@@ -22,6 +23,7 @@ const Homepage: React.FC = () => {
   const navigate = useNavigate();
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { lang } = useLanguage();
 
   // Prisijungiam prie socket.io kai puslapis užsikrauna
   useEffect(() => {
@@ -91,12 +93,14 @@ const Homepage: React.FC = () => {
       <div className="flex flex-col w-full px-8 mt-[70px]">
         <div className="w-full max-w-[1400px] mx-auto bg-white/90 backdrop-blur-md border border-white/50 p-6 rounded-2xl">
           <div className="bg-white/60 backdrop-blur-md border border-white/30 mt-5 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-2xl">
-            <p className="font-semibold text-gray-600 text-2xl">Registered Users:</p>
+            <p className="font-semibold text-gray-600 text-2xl">
+              {lang === "lt" ? "Registruoti vartotojai:" : "Registered Users:"}
+            </p>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search..."
+              placeholder={lang === "lt" ? "Ieškoti..." : "Search..."}
               className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-72 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
             />
           </div>

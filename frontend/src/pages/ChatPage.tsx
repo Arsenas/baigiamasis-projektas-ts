@@ -5,6 +5,7 @@ import mainStore from "../store/mainStore";
 import SingleMessage from "../components/SingleMessage";
 import { useNavigate } from "react-router-dom";
 import type { Message, User } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 
 const ChatPage: React.FC = () => {
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
@@ -15,6 +16,7 @@ const ChatPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const nav = useNavigate();
   const [showButton, setShowButton] = useState(false);
+  const { lang } = useLanguage();
 
   // Create socket connection and listen for real-time events
   useEffect(() => {
@@ -161,7 +163,9 @@ const ChatPage: React.FC = () => {
       <div className="w-full max-w-[1400px] bg-white/90 backdrop-blur-md border border-white/50 rounded-2xl shadow-2xl p-6">
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xl font-semibold text-gray-700">Chat Room</p>
+            <p className="text-xl font-semibold text-gray-700">
+              {lang === "lt" ? "Viešas pokalbių kambarys" : "Chat Room"}
+            </p>
           </div>
 
           {currentUser ? (
@@ -189,7 +193,7 @@ const ChatPage: React.FC = () => {
                   <input
                     ref={messageRef}
                     type="text"
-                    placeholder="Type your message"
+                    placeholder={lang === "lt" ? "Rašykite žinutę" : "Type your message"}
                     className="bg-gray-50 w-full border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -218,12 +222,14 @@ const ChatPage: React.FC = () => {
             </>
           ) : (
             <div className="h-[600px] bg-white p-3 w-full flex flex-col justify-end items-center">
-              <p className="font-semibold text-gray-600">Please Log In to send a message</p>
+              <p className="font-semibold text-gray-600">
+                {lang === "lt" ? "Prisijunkite, kad galėtumėte rašyti žinutes" : "Please Log In to send a message"}
+              </p>
               <button
                 onClick={() => nav("/login")}
                 className="text-white w-[300px] mt-5 bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm px-5 py-2.5"
               >
-                Login
+                {lang === "lt" ? "Prisijungti" : "Login"}
               </button>
             </div>
           )}

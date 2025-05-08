@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import mainStore from "../store/mainStore";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 // Tipas naudotojo propsams
 interface User {
@@ -20,6 +21,7 @@ const SingleUserCard: React.FC<Props> = ({ user }) => {
   const { currentUser } = mainStore();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const { lang } = useLanguage();
 
   return (
     <div
@@ -46,7 +48,7 @@ const SingleUserCard: React.FC<Props> = ({ user }) => {
             isDark ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-indigo-600 hover:bg-indigo-500 text-white"
           }`}
         >
-          Message
+          {lang === "lt" ? "Žinutė" : "Message"}
         </button>
       )}
     </div>

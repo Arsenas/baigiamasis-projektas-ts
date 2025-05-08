@@ -4,6 +4,7 @@ import http from "../plugins/http";
 import mainStore from "../store/mainStore";
 import io from "socket.io-client";
 import { Socket } from "socket.io-client";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Props {
   message: Message;
@@ -25,6 +26,7 @@ const SingleMessage: React.FC<Props> = ({
   const { currentUser } = mainStore();
   const { token } = mainStore();
   const [showMenu, setShowMenu] = useState(false);
+  const { lang } = useLanguage();
 
   const isCurrentUser = message.sender?._id === currentUser?._id;
   const likedCount = message.liked?.length ?? 0;
@@ -74,14 +76,14 @@ const SingleMessage: React.FC<Props> = ({
                   onClick={() => handleDeleteMessage(message._id!)}
                   className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Unsend for me
+                  {lang === "lt" ? "Ištrinti tik sau" : "Unsend for me"}
                 </button>
                 {isCurrentUser && (
                   <button
                     onClick={handleDeleteForEveryone}
                     className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-100"
                   >
-                    Unsend for everyone
+                    {lang === "lt" ? "Ištrinti visiems" : "Unsend for everyone"}
                   </button>
                 )}
               </div>
@@ -130,6 +132,7 @@ const SingleMessage: React.FC<Props> = ({
 
       {/* Timestamp */}
       <div className={`flex items-center gap-2 text-xs text-gray-400 ${textAlign}`}>
+        {/* Galima vėliau lokalizuoti laiką, jei reikia */}
         <span>{new Date(message.timestamp).toISOString().slice(0, 16).replace("T", " ")}</span>
       </div>
     </div>
