@@ -30,7 +30,7 @@ const SingleUserPage: React.FC = () => {
   const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:2000");
+    const newSocket = io(process.env.REACT_APP_API_URL || "");
     setSocket(newSocket);
 
     newSocket.on("profileUpdated", (data: User) => {

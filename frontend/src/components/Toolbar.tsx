@@ -35,7 +35,7 @@ const Toolbar: React.FC = () => {
       }
     }
 
-    const newSocket = io("http://localhost:2000");
+    const newSocket = io(process.env.REACT_APP_API_URL || "");
     setSocket(newSocket);
 
     newSocket.on("messageReceived", fetchUserConversations);
