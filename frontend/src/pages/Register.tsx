@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 // Komponentas skirtas vartotojo registracijai
 const Register: React.FC = () => {
@@ -23,6 +24,10 @@ const Register: React.FC = () => {
 
   //Dark mode
   const { theme } = useTheme();
+
+  //Fi EYE
+  const [showPass, setShowPass] = useState(false);
+  const [showPass2, setShowPass2] = useState(false);
 
   // Validacijos regex
   const uppercaseRegex = /[A-Z]/;
@@ -136,16 +141,24 @@ const Register: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">
               {lang === "lt" ? "Slaptažodis" : "Password"}
             </label>
-            <input
-              ref={passRef}
-              type="password"
-              autoComplete="new-password"
-              required
-              className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") pass2Ref.current?.focus();
-              }}
-            />
+            <div className="relative">
+              <input
+                ref={passRef}
+                type={showPass ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 pr-10 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") pass2Ref.current?.focus();
+                }}
+              />
+              <span
+                onClick={() => setShowPass(!showPass)}
+                className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer text-gray-500"
+              >
+                {showPass ? <FiEye /> : <FiEyeOff />}
+              </span>
+            </div>
           </div>
 
           {/* Repeat password */}
@@ -153,16 +166,24 @@ const Register: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">
               {lang === "lt" ? "Pakartokite slaptažodį" : "Repeat password"}
             </label>
-            <input
-              ref={pass2Ref}
-              type="password"
-              autoComplete="new-password"
-              required
-              className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") register();
-              }}
-            />
+            <div className="relative">
+              <input
+                ref={pass2Ref}
+                type={showPass2 ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                className="mt-1 block w-full rounded-md border border-gray-400 bg-white py-2 px-3 pr-10 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") register();
+                }}
+              />
+              <span
+                onClick={() => setShowPass2(!showPass2)}
+                className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer text-gray-500"
+              >
+                {showPass2 ? <FiEye /> : <FiEyeOff />}
+              </span>
+            </div>
           </div>
 
           {/* Error message */}

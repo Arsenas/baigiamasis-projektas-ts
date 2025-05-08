@@ -7,6 +7,7 @@ import SuccessComp from "../components/SuccessComp";
 import Modal from "../components/Modal";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Profile: React.FC = () => {
   const { currentUser, setCurrentUser, token } = mainStore();
@@ -20,6 +21,9 @@ const Profile: React.FC = () => {
 
   const [showPassModal, setShowPassModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showNew2, setShowNew2] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg3, setErrorMsg3] = useState<string | null>(null);
@@ -206,26 +210,57 @@ const Profile: React.FC = () => {
         title={lang === "lt" ? "Keisti slaptažodį" : "Change Password"}
         onClose={() => setShowPassModal(false)}
       >
-        <input
-          type="password"
-          ref={passRef}
-          placeholder={lang === "lt" ? "Dabartinis slaptažodis" : "Current Password"}
-          className="w-full p-2 mb-2 border rounded-lg"
-        />
-        <input
-          type="password"
-          ref={newPassRef}
-          placeholder={lang === "lt" ? "Naujas slaptažodis" : "New Password"}
-          className="w-full p-2 mb-2 border rounded-lg"
-        />
-        <input
-          type="password"
-          ref={newPass2Ref}
-          placeholder={lang === "lt" ? "Pakartokite naują slaptažodį" : "Repeat New Password"}
-          className="w-full p-2 mb-4 border rounded-lg"
-        />
+        {/* Current password */}
+        <div className="relative mb-2">
+          <input
+            type={showCurrent ? "text" : "password"}
+            ref={passRef}
+            placeholder={lang === "lt" ? "Dabartinis slaptažodis" : "Current Password"}
+            className="w-full p-2 border rounded-lg pr-10"
+          />
+          <span
+            className="absolute top-1/2 right-3 transform text-gray-400 -translate-y-1/2 cursor-pointer"
+            onClick={() => setShowCurrent(!showCurrent)}
+          >
+            {showCurrent ? <FiEye /> : <FiEyeOff />}
+          </span>
+        </div>
+
+        {/* New password */}
+        <div className="relative mb-2">
+          <input
+            type={showNew ? "text" : "password"}
+            ref={newPassRef}
+            placeholder={lang === "lt" ? "Naujas slaptažodis" : "New Password"}
+            className="w-full p-2 border rounded-lg pr-10"
+          />
+          <span
+            className="absolute top-1/2 right-3 transform text-gray-400 -translate-y-1/2 cursor-pointer"
+            onClick={() => setShowNew(!showNew)}
+          >
+            {showNew ? <FiEye /> : <FiEyeOff />}
+          </span>
+        </div>
+
+        {/* Repeat new password */}
+        <div className="relative mb-4">
+          <input
+            type={showNew2 ? "text" : "password"}
+            ref={newPass2Ref}
+            placeholder={lang === "lt" ? "Pakartokite naują slaptažodį" : "Repeat New Password"}
+            className="w-full p-2 border rounded-lg pr-10"
+          />
+          <span
+            className="absolute top-1/2 right-3 transform text-gray-400 -translate-y-1/2 cursor-pointer"
+            onClick={() => setShowNew2(!showNew2)}
+          >
+            {showNew2 ? <FiEye /> : <FiEyeOff />}
+          </span>
+        </div>
+
         {errorMsg3 && <ErrorComp error={errorMsg3} />}
         {successMsg3 && <SuccessComp msg={successMsg3} />}
+
         <div className="flex justify-end gap-2">
           <button onClick={() => setShowPassModal(false)} className="bg-gray-300 px-4 py-2 rounded-lg text-sm">
             {lang === "lt" ? "Atšaukti" : "Cancel"}
@@ -248,7 +283,6 @@ const Profile: React.FC = () => {
           </button>
         </div>
       </Modal>
-
       {/* Delete Account Modal */}
       <Modal
         isOpen={showDeleteModal}
