@@ -60,43 +60,43 @@ const AllConversations: React.FC = () => {
     : [];
 
   return (
-    <div className="flex flex-col gap-3 relative">
-      <div className="flex flex-col w-full absolute top-[70px] items-center">
-        <div className="flex flex-col w-full max-w-[1400px] px-[10px] sm:px-[20px] bg-white/90 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-2xl">
-          <div className="bg-white/60 backdrop-blur-md border border-white/30 mt-5 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-semibold text-2xl shadow-2xl">
-            <p className="text-gray-600">{lang === "lt" ? "Tavo pokalbiai:" : "Your Conversations:"}</p>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={lang === "lt" ? "Ieškoti..." : "Search..."}
-              className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-72 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-            />
-          </div>
-
-          {currentUser ? (
-            <div className="mt-5 flex flex-wrap justify-start gap-x-[40px] gap-y-[50px]">
-              {filteredConversations.map((conversation) => (
-                <div
-                  key={conversation._id}
-                  className="w-full sm:w-[calc(50%-20px)] xl:w-[calc(33.33%-27px)] max-w-[450px]"
-                >
-                  <SingleConversationComp conversation={conversation} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex justify-center mt-6">
-              <button
-                type="button"
-                onClick={() => nav(`/login`)}
-                className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
-              >
-                {lang === "lt" ? "Prisijunkite, kad matytumėte pokalbius" : "Log In to see your conversations"}
-              </button>
-            </div>
-          )}
+    <div className="flex-grow flex flex-col justify-start items-center w-full min-h-[calc(100vh-130px)] px-[10px] sm:px-[20px] pt-[70px] pb-10">
+      <div className="w-full max-w-[1400px] bg-white/90 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-2xl flex flex-col gap-6">
+        {/* 🔍 Paieška ir antraštė */}
+        <div className="bg-white/60 backdrop-blur-md border border-white/30 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-semibold text-2xl shadow-2xl">
+          <p className="text-gray-600">{lang === "lt" ? "Tavo pokalbiai:" : "Your Conversations:"}</p>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={lang === "lt" ? "Ieškoti..." : "Search..."}
+            className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-72 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+          />
         </div>
+
+        {/* 💬 Pokalbiai */}
+        {currentUser ? (
+          <div className="flex flex-wrap justify-start gap-x-[40px] gap-y-[50px]">
+            {filteredConversations.map((conversation) => (
+              <div
+                key={conversation._id}
+                className="w-full sm:w-[calc(50%-20px)] xl:w-[calc(33.33%-27px)] max-w-[450px]"
+              >
+                <SingleConversationComp conversation={conversation} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex justify-center mt-6">
+            <button
+              type="button"
+              onClick={() => nav(`/login`)}
+              className="text-white bg-indigo-600 hover:bg-indigo-500 font-medium rounded-full text-sm px-5 py-2.5"
+            >
+              {lang === "lt" ? "Prisijunkite, kad matytumėte pokalbius" : "Log In to see your conversations"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
