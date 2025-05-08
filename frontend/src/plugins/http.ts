@@ -6,6 +6,7 @@ export interface PostAuthResponse {
   message?: string;
   user?: any;
   updatedUser?: any;
+  deleted?: boolean;
   token?: string;
   data?: any;
 }

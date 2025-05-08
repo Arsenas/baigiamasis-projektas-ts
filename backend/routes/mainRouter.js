@@ -139,6 +139,15 @@ Router.post("/update-profile", auth, async (req, res) => {
   try {
     console.log("🔍 req.user:", req.user);
     console.log("📝 req.body:", req.body);
+
+    // NAUJAI PRIDĖK:
+    const testUser = await User.findById(req.user.id);
+    console.log("🧪 Ar user egzistuoja:", testUser);
+
+    if (!testUser) {
+      return res.status(404).json({ error: true, message: "User not found (before update)" });
+    }
+
     const updated = await User.findByIdAndUpdate(
       req.user.id,
       {

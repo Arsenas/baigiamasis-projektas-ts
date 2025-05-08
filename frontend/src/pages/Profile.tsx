@@ -50,8 +50,9 @@ const Profile: React.FC = () => {
       setSuccessMsg(null);
     }, 3000);
   }
-  async function checkCurrentPassword(num: number) {
-    if (!passRef.current || !currentUser) return;
+  async function checkCurrentPassword(num: number): Promise<boolean> {
+    if (!passRef.current || !currentUser) return false;
+
     const res = await http.postAuth(
       "/login",
       {
@@ -60,27 +61,17 @@ const Profile: React.FC = () => {
       },
       token
     );
+
+    const errorSetter = num === 1 ? setErrorMsg3 : setErrorMsg4;
+
     if (!res.success) {
-      num === 1
-        ? setErrorMsg3(res.message ?? "Something went wrong")
-        : setErrorMsg4(res.message ?? "Something went wrong");
-
-      setTimeout(() => {
-        setErrorMsg3(null);
-        setErrorMsg4(null);
-      }, 3000);
-    } else {
-      num === 1
-        ? setErrorMsg3(res.message ?? "Something went wrong")
-        : setErrorMsg4(res.message ?? "Something went wrong");
-
-      setTimeout(() => {
-        setErrorMsg3(null);
-        setErrorMsg4(null);
-      }, 3000);
+      errorSetter(res.message ?? "Something went wrong");
+      setTimeout(() => errorSetter(null), 3000);
+      return false;
     }
-  }
 
+    return true;
+  }
   async function changePassword() {
     if (!newPassRef.current || !newPass2Ref.current || !currentUser) return;
     const pass1 = newPassRef.current.value;
@@ -110,11 +101,15 @@ const Profile: React.FC = () => {
 
   async function deleteAcc() {
     if (!currentUser) return;
-    const res = await http.postAuth("/delete-account", { userID: currentUser._id }, token);
-    if (!res.error) {
+    const res = await http.postAuth("/delete-account", {}, token);
+
+    if (!res.error && res.deleted) {
       socket?.emit("deletedAcc", res.data);
       setCurrentUser(null);
-      window.location.href = "/login";
+      localStorage.removeItem("token");
+      window.location.href = "/register";
+    } else {
+      console.error("❌ Deletion failed:", res.message);
     }
   }
 
@@ -236,11 +231,12 @@ const Profile: React.FC = () => {
             {lang === "lt" ? "Atšaukti" : "Cancel"}
           </button>
           <button
-            onClick={() => {
-              checkCurrentPassword(1).then(() => {
-                changePassword();
+            onClick={async () => {
+              const isCorrect = await checkCurrentPassword(1);
+              if (isCorrect) {
+                await changePassword();
                 setShowPassModal(false);
-              });
+              }
             }}
             className={`${
               theme === "dark"
