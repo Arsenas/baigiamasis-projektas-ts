@@ -52,11 +52,12 @@ const Homepage: React.FC = () => {
     }; // Socketo uždarymas kai komponentas sunaikinamas
   }, []);
 
+  const { token } = mainStore();
   // Duomenų užkrovimas iš serverio
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await http.get("/get-all-users");
+        const res = await http.get("/get-all-users", token);
 
         if (!res.error) {
           let otherUsers: User[] = res.data.filter((u: User) => u.username.toLowerCase() !== "admin");
