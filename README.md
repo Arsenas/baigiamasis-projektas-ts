@@ -7,7 +7,8 @@ Tai pilnai veikianti realaus laiko pokalbių platforma, leidžianti registruotis
 ## 🌐 Gyvai pasiekiama
 
 🔗 https://baigiamasis-projektas-ts.vercel.app
-
+    Admino prisijungimas: login: Admin
+                          password: Admin1!
 ---
 
 ## 🚀 Paleidimas
